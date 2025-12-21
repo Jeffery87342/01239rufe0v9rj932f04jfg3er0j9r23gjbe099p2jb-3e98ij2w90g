@@ -92,7 +92,7 @@ class ImprovedRobloxCreator:
             # Generate credentials
             username = RobloxProfile.get_username()
             password = RobloxProfile.get_password()
-            birthday = RobloxProfile.get_birth_day()
+            birthday = RobloxProfile.get_birthday()
             
             self._log("INFO", f"Generating {username}")
             
