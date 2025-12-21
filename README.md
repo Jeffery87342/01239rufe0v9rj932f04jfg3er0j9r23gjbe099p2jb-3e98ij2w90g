@@ -183,11 +183,13 @@ All dependencies in `requirements.txt`:
 
 - `requests` - HTTP library
 - `pillow` - Image processing
-- `numpy` - Numerical operations
-- `opencv-python` - Computer vision
+- `numpy` - Numerical operations (pre-built binaries for Windows)
+- `opencv-python-headless` - Computer vision (headless version for better compatibility)
 - `colorama` - Colored console output
 
 **Installation:** `pip install -r requirements.txt`
+
+**Note:** We use `opencv-python-headless` which includes all OpenCV functionality but without GUI support, ensuring better compatibility and pre-built wheels on all platforms.
 
 ---
 
@@ -200,20 +202,22 @@ All dependencies in `requirements.txt`:
 ### Installation errors (numpy/opencv build failures on Windows)
 If you get errors about missing compilers when running `pip install -r requirements.txt`:
 
-**Quick Fix:**
+**Quick Fix (Recommended):**
 ```bash
 # Upgrade pip first
 python -m pip install --upgrade pip
 
-# Install packages one at a time (this uses pre-built wheels)
-pip install requests
-pip install pillow
-pip install "numpy<2.0.0"
-pip install opencv-python
-pip install colorama
+# Install with pre-built binaries only (no compilation)
+pip install --only-binary=:all: requests
+pip install --only-binary=:all: pillow
+pip install --only-binary=:all: "numpy>=1.21.0,<1.27.0"
+pip install --only-binary=:all: opencv-python-headless
+pip install --only-binary=:all: colorama
 ```
 
-**Alternative:** The `run.bat` launcher handles this automatically. Just double-click `run.bat` instead of manually installing.
+**Even Easier:** Just double-click `run.bat` - it now forces pre-built binaries automatically!
+
+**Note:** We use `opencv-python-headless` instead of `opencv-python` because it has better pre-built wheel support and doesn't require GUI libraries.
 
 ### "No proxies loaded"
 - Add proxies to `proxies.txt`, OR

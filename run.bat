@@ -67,16 +67,17 @@ echo.
 python -m pip install --upgrade pip --quiet
 
 REM Install packages individually for better Windows compatibility
+REM Use --only-binary to force pre-built wheels (no compilation needed)
 echo [*] Installing requests...
-python -m pip install "requests>=2.31.0" --quiet
+python -m pip install --only-binary=:all: "requests>=2.31.0" --quiet
 echo [*] Installing pillow...
-python -m pip install "pillow>=10.0.0" --quiet
+python -m pip install --only-binary=:all: "pillow>=10.0.0" --quiet
 echo [*] Installing numpy...
-python -m pip install "numpy>=1.24.0,<2.0.0" --quiet
-echo [*] Installing opencv-python...
-python -m pip install "opencv-python>=4.8.0,<5.0.0" --quiet
+python -m pip install --only-binary=:all: "numpy>=1.21.0,<1.27.0" --quiet
+echo [*] Installing opencv-python-headless...
+python -m pip install --only-binary=:all: "opencv-python-headless>=4.5.0,<5.0.0" --quiet
 echo [*] Installing colorama...
-python -m pip install "colorama>=0.4.6" --quiet
+python -m pip install --only-binary=:all: "colorama>=0.4.6" --quiet
 
 if %errorlevel% neq 0 (
     echo [!] ERROR: Failed to install dependencies
