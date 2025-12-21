@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="icon" href="/assets/img/doge.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/assets/css/app.css">
+  <link rel="stylesheet" href="/assets/css/menu.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <script src="/assets/js/functions.js"></script>
+  <script src="/assets/js/anym.js"></script>
+  <title>Doge | Roblox T-Shirt XML</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+    }
+    .input-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    input[type="text"]::placeholder, input[type="number"]::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-right: 10px;
+      transition: transform 0.2s;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+    .xml-output {
+      margin-top: 30px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      border-radius: 8px;
+      display: none;
+    }
+    .xml-output pre {
+      color: #4ade80;
+      font-family: 'Courier New', monospace;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin: 0;
+    }
+    .button-group {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .back-btn {
+      background: rgba(255, 255, 255, 0.2);
+      margin-top: 20px;
+      display: inline-block;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      color: white;
+    }
+    .info-box {
+      background: rgba(66, 153, 225, 0.2);
+      border-left: 4px solid #4299e1;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="contextMenu" class="context-menu themesExcluded" style="--ripple-duration: 300ms;"><div class="context-menu-item with-submenu themesExcluded" id="contextItem" anim="ripple" onclick="toggleSubmenu(event)"><i class="bi bi-file-spreadsheet"></i> Tab Cloak</div><div class="context-submenu themesExcluded" id="contextItem"><div class="context-menu-item themesExcluded" id="contextItem" anim="ripple" onclick="tabCloak()">Enable</div><div class="context-menu-item themesExcluded" anim="ripple" onclick="disableTabCloak()">Disable</div></div><div class="context-menu-item with-submenu themesExcluded" id="contextItem" anim="ripple" onclick="toggleSubmenu2(event)"><i class="bi bi-clock-history"></i> Last Visited Site</div><div class="context-submenu themesExcluded" id="contextItem"><div class="context-menu-item themesExcluded" id="contextItem" anim="ripple" onclick="vSite()">Visit Last Site</div><div class="context-menu-item themesExcluded" id="contextItem" anim="ripple" onclick="vAG()">Visit Last App/Game</div></div><div class="context-menu-item themesExcluded" id="contextItem" onclick="openWindow()"><i class="bi bi-box-arrow-up-right"></i> About:Blank Cloak</div><div class="context-menu-item themesExcluded" id="contextItem" onclick="openSettings()"><i class="bi bi-gear"></i> View all Settings</div></div>
+  
+  <nav id="mytopnav">
+    <button class="button-6" anim="ripple" onclick="send('/settings.html')"><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/></svg>Settings</button>
+    <button class="button-6" anim="ripple" onclick="send('/gms')"><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-joystick" viewBox="0 0 16 16"><path d="M10 2a2 2 0 0 1-1.5 1.937v5.087c.863.083 1.5.377 1.5.726 0 .414-.895.75-2 .75s-2-.336-2-.75c0-.35.637-.643 1.5-.726V3.937A2 2 0 1 1 10 2z"/><path d="M0 9.665v1.717a1 1 0 0 0 .553.894l6.553 3.277a2 2 0 0 0 1.788 0l6.553-3.277a1 1 0 0 0 .553-.894V9.665c0-.1-.06-.19-.152-.23L9.5 6.715v.993l5.227 2.178a.125.125 0 0 1 .001.23l-5.94 2.546a2 2 0 0 1-1.576 0l-5.94-2.546a.125.125 0 0 1 .001-.23L6.5 7.708l-.013-.988L.152 9.435a.25.25 0 0 0-.152.23z"/></svg>Games</button>
+    <button class="button-6" anim="ripple" onclick="send('/apps')"><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-grid-3x3-gap-fill" viewBox="0 0 16 16"><path d="M1 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V2zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V2zM1 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V7zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V7zM1 12a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-2zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-2zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-2z"/></svg>Apps</button><br>
+    <a href="/" class="title" anim="ripple"><img src="/assets/img/doge.jpg" style="width:22px;height:22px;"> Doge Unblocker</a>    
+  </nav>
+
+  <div class="container">
+    <h1>🎨 Roblox T-Shirt XML Generator</h1>
+    
+    <div class="info-box">
+      <strong>ℹ️ Info:</strong> Generate XML files for Roblox t-shirts. Enter your texture ID below to create a valid t-shirt XML file.
+    </div>
+
+    <div class="input-group">
+      <label for="textureId">Texture ID:</label>
+      <input type="number" id="textureId" placeholder="Enter Roblox texture asset ID (e.g., 123456789)" min="1">
+    </div>
+
+    <div class="input-group">
+      <label for="itemName">T-Shirt Name (Optional):</label>
+      <input type="text" id="itemName" placeholder="My Awesome T-Shirt" value="Shirt Graphic">
+    </div>
+
+    <div class="button-group">
+      <button onclick="generateXML()">Generate XML</button>
+      <button onclick="copyToClipboard()">Copy to Clipboard</button>
+      <button onclick="downloadXML()">Download XML</button>
+    </div>
+
+    <div class="xml-output" id="xmlOutput">
+      <pre id="xmlContent"></pre>
+    </div>
+
+    <div style="text-align: center;">
+      <a href="/" class="back-btn">← Back to Home</a>
+    </div>
+  </div>
+
+  <script>
+    let generatedXML = '';
+
+    function escapeXml(unsafe) {
+      return unsafe
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+    }
+
+    function generateXML() {
+      const textureIdInput = document.getElementById('textureId').value;
+      const itemName = document.getElementById('itemName').value || 'Shirt Graphic';
+
+      // Validate and parse texture ID
+      const textureId = parseInt(textureIdInput, 10);
+      
+      if (!textureIdInput || isNaN(textureId) || textureId <= 0) {
+        alert('Please enter a valid positive texture ID!');
+        return;
+      }
+
+      const escapedItemName = escapeXml(itemName);
+
+      generatedXML = `<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+  <External>null</External>
+  <External>nil</External>
+  <Item class="ShirtGraphic" referent="RBX0">
+    <Properties>
+      <Content name="Graphic"><url>https://www.roblox.com/asset/?id=${textureId}</url></Content>
+      <string name="Name">${escapedItemName}</string>
+    </Properties>
+  </Item>
+</roblox>`;
+
+      document.getElementById('xmlContent').textContent = generatedXML;
+      document.getElementById('xmlOutput').style.display = 'block';
+    }
+
+    function copyToClipboard() {
+      if (!generatedXML) {
+        alert('Please generate XML first!');
+        return;
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(generatedXML).then(() => {
+          alert('XML copied to clipboard!');
+        }).catch(err => {
+          console.error('Failed to copy:', err);
+          fallbackCopy();
+        });
+      } else {
+        fallbackCopy();
+      }
+    }
+
+    function fallbackCopy() {
+      // Fallback for browsers without Clipboard API support or non-HTTPS contexts
+      // Note: document.execCommand('copy') is deprecated but maintained here for compatibility
+      // with older browsers and HTTP contexts. This fallback can be safely removed once all
+      // target browsers support the modern Clipboard API in secure contexts.
+      const textArea = document.createElement('textarea');
+      textArea.value = generatedXML;
+      textArea.style.position = 'fixed';
+      textArea.style.top = '-9999px';
+      textArea.style.left = '-9999px';
+      textArea.style.opacity = '0';
+      textArea.setAttribute('readonly', '');
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        alert('XML copied to clipboard!');
+      } catch (err) {
+        console.error('Fallback copy failed:', err);
+        alert('Failed to copy to clipboard. Please copy manually from the output below.');
+      } finally {
+        document.body.removeChild(textArea);
+      }
+    }
+
+    function downloadXML() {
+      if (!generatedXML) {
+        alert('Please generate XML first!');
+        return;
+      }
+
+      const blob = new Blob([generatedXML], { type: 'text/xml' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'roblox-tshirt.xml';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }
+
+    // Allow Enter key to generate XML
+    document.getElementById('textureId').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        generateXML();
+      }
+    });
+
+    document.getElementById('itemName').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        generateXML();
+      }
+    });
+  </script>
+</body>
+</html>

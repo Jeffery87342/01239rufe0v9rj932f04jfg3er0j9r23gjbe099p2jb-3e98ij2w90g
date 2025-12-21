@@ -37,6 +37,9 @@ app.get('/credits', (req, res) => {
 app.get('/partners', (req, res) => {
   res.sendFile(path.join(process.cwd(), './static/partners.html'));
 });
+app.get('/roblox-tshirt', (req, res) => {
+  res.sendFile(path.join(process.cwd(), './static/roblox-tshirt.html'));
+});
 app.use((req, res) => {
   res.statusCode = 404;
   res.sendFile(path.join(process.cwd(), './static/404.html'))
