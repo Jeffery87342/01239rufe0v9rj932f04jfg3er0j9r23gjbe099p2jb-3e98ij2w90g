@@ -160,19 +160,20 @@ def main() -> None:
     
     # Load proxies if enabled
     proxies = []
-    if USE_PROXIES:
+    use_proxies_local = USE_PROXIES
+    if use_proxies_local:
         proxies = Util.load_proxies()
         
         if not proxies:
             print(f"{Fore.YELLOW}[!] Warning: Proxies enabled but no valid proxies found{Style.RESET_ALL}")
             print(f"{Fore.YELLOW}[!] Add proxies to 'proxies.txt' or disable 'use_proxies' in config.json{Style.RESET_ALL}")
             print(f"{Fore.CYAN}[*] Continuing WITHOUT proxies...{Style.RESET_ALL}\n")
-            USE_PROXIES = False
+            use_proxies_local = False
             sleep(2)
     
     print(f"\n{Fore.GREEN}[+] Starting generation with {THREAD_AMOUNT} threads...{Style.RESET_ALL}")
     print(f"{Fore.GREEN}[+] Target: {target} accounts{Style.RESET_ALL}")
-    if USE_PROXIES and proxies:
+    if use_proxies_local and proxies:
         print(f"{Fore.GREEN}[+] Using {len(proxies)} proxies{Style.RESET_ALL}")
     else:
         print(f"{Fore.YELLOW}[!] Running WITHOUT proxies{Style.RESET_ALL}")
