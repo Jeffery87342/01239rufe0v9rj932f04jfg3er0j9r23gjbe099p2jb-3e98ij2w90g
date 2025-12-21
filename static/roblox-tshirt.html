@@ -148,6 +148,15 @@
   <script>
     let generatedXML = '';
 
+    function escapeXml(unsafe) {
+      return unsafe
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+    }
+
     function generateXML() {
       const textureId = document.getElementById('textureId').value;
       const itemName = document.getElementById('itemName').value || 'Shirt Graphic';
@@ -157,13 +166,15 @@
         return;
       }
 
+      const escapedItemName = escapeXml(itemName);
+
       generatedXML = `<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
   <External>null</External>
   <External>nil</External>
   <Item class="ShirtGraphic" referent="RBX0">
     <Properties>
       <Content name="Graphic"><url>https://www.roblox.com/asset/?id=${textureId}</url></Content>
-      <string name="Name">${itemName}</string>
+      <string name="Name">${escapedItemName}</string>
     </Properties>
   </Item>
 </roblox>`;
@@ -192,6 +203,7 @@
 
     function fallbackCopy() {
       // Fallback for browsers without Clipboard API support or non-HTTPS contexts
+      // Note: document.execCommand('copy') is deprecated but used here for compatibility with older browsers
       const textArea = document.createElement('textarea');
       textArea.value = generatedXML;
       textArea.style.position = 'fixed';
