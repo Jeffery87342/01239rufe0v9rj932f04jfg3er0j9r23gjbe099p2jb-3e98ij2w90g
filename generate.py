@@ -3,10 +3,9 @@ Generate Module
 Handles account generation logic with threading support.
 """
 
-from roblox_signup import RobloxAccountCreator
+from improved_roblox_signup import ImprovedRobloxCreator
 from generate_counter import GenerateCounter
 from typing import Optional
-import random
 
 
 class Generate:
@@ -28,18 +27,18 @@ class Generate:
                 break
             
             try:
-                # Create account creator with error handling and debug enabled
-                creator = RobloxAccountCreator(proxy=proxy, debug=True)
+                # Create account creator with improved implementation
+                creator = ImprovedRobloxCreator(proxy=proxy, debug=True)
                 
                 # Attempt to create account
-                result = creator.create_random_account()
+                result = creator.create_account()
                 
                 if result:
                     # Success
                     counter.increment_generated()
                 else:
                     # Failed - record error type
-                    error_type = creator.last_error.split(':')[0] if creator.last_error else "UNKNOWN"
+                    error_type = creator.last_error if creator.last_error else "UNKNOWN"
                     counter.increment_failed(error_type)
                 
             except KeyboardInterrupt:
@@ -66,18 +65,18 @@ class Generate:
                 break
             
             try:
-                # Create account creator with error handling and debug enabled
-                creator = RobloxAccountCreator(proxy=proxy, debug=True)
+                # Create account creator with improved implementation
+                creator = ImprovedRobloxCreator(proxy=proxy, debug=True)
                 
                 # Attempt to create account
-                result = creator.create_random_account()
+                result = creator.create_account()
                 
                 if result:
                     # Success
                     counter.increment_generated()
                 else:
                     # Failed - record error type
-                    error_type = creator.last_error.split(':')[0] if creator.last_error else "UNKNOWN"
+                    error_type = creator.last_error if creator.last_error else "UNKNOWN"
                     counter.increment_failed(error_type)
                 
             except KeyboardInterrupt:
