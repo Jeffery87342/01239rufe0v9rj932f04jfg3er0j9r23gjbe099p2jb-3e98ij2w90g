@@ -28,8 +28,8 @@ class Generate:
                 break
             
             try:
-                # Create account creator with error handling
-                creator = RobloxAccountCreator(proxy=proxy, debug=False)
+                # Create account creator with error handling and debug enabled
+                creator = RobloxAccountCreator(proxy=proxy, debug=True)
                 
                 # Attempt to create account
                 result = creator.create_random_account()
@@ -66,8 +66,8 @@ class Generate:
                 break
             
             try:
-                # Create account creator with error handling
-                creator = RobloxAccountCreator(proxy=proxy, debug=False)
+                # Create account creator with error handling and debug enabled
+                creator = RobloxAccountCreator(proxy=proxy, debug=True)
                 
                 # Attempt to create account
                 result = creator.create_random_account()
