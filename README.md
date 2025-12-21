@@ -183,13 +183,13 @@ All dependencies in `requirements.txt`:
 
 - `requests` - HTTP library
 - `pillow` - Image processing
-- `numpy` - Numerical operations (pre-built binaries for Windows)
+- `numpy` - Numerical operations (auto-selects version with pre-built wheels for your Python)
 - `opencv-python-headless` - Computer vision (headless version for better compatibility)
 - `colorama` - Colored console output
 
 **Installation:** `pip install -r requirements.txt`
 
-**Note:** We use `opencv-python-headless` which includes all OpenCV functionality but without GUI support, ensuring better compatibility and pre-built wheels on all platforms.
+**Note:** We use `opencv-python-headless` which includes all OpenCV functionality but without GUI support, ensuring better compatibility and pre-built wheels on all platforms. The `--only-binary` flag ensures only pre-built packages are installed (no compilation required).
 
 ---
 
@@ -210,14 +210,14 @@ python -m pip install --upgrade pip
 # Install with pre-built binaries only (no compilation)
 pip install --only-binary=:all: requests
 pip install --only-binary=:all: pillow
-pip install --only-binary=:all: "numpy>=1.21.0,<1.27.0"
+pip install --only-binary=:all: numpy
 pip install --only-binary=:all: opencv-python-headless
 pip install --only-binary=:all: colorama
 ```
 
-**Even Easier:** Just double-click `run.bat` - it now forces pre-built binaries automatically!
+**Even Easier:** Just double-click `run.bat` - it forces pre-built binaries automatically!
 
-**Note:** We use `opencv-python-headless` instead of `opencv-python` because it has better pre-built wheel support and doesn't require GUI libraries.
+**Note:** We use `opencv-python-headless` instead of `opencv-python` because it has better pre-built wheel support and doesn't require GUI libraries. The `--only-binary=:all:` flag ensures pip only installs pre-built packages compatible with your Python version (including Python 3.14+).
 
 ### "No proxies loaded"
 - Add proxies to `proxies.txt`, OR
