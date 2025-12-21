@@ -365,20 +365,32 @@ class ExifMetadataEditor:
         # Add overwrite flag (no backup)
         cmd.append('-overwrite_original')
         
-        # Add each selected tag with the metadata content
-        for tag in selected_tags:
-            cmd.append(f'-{tag}={metadata_content}')
-        
-        # Add the image path
-        cmd.append(image_path)
-        
-        # Execute ExifTool
+        # For long metadata content, write to a temporary file to avoid Windows command-line length limits
+        # Windows has a ~8191 character limit for command lines
+        temp_file = None
         try:
+            # Create temporary file for metadata content
+            import tempfile
+            temp_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt', encoding='utf-8')
+            temp_file.write(metadata_content)
+            temp_file.close()
+            
+            # Add each selected tag using file input syntax (-TAG<=FILE)
+            # This avoids command-line length limitations
+            for tag in selected_tags:
+                cmd.append(f'-{tag}<={temp_file.name}')
+            
+            # Add the image path
+            cmd.append(image_path)
+            
+            # Execute ExifTool
             self.update_status("Embedding metadata...")
             
             # Debug: print command being executed
             print(f"Executing command: {cmd}")
             print(f"ExifTool path: {self.exiftool_cmd}")
+            print(f"Temp file: {temp_file.name}")
+            print(f"Content length: {len(metadata_content)} characters")
             
             # Use shell=False for security and proper path handling
             result = subprocess.run(
@@ -388,6 +400,13 @@ class ExifMetadataEditor:
                 timeout=30,
                 shell=False
             )
+            
+            # Clean up temp file after execution
+            if temp_file and os.path.exists(temp_file.name):
+                try:
+                    os.unlink(temp_file.name)
+                except:
+                    pass
             
             if result.returncode == 0:
                 # Success
@@ -420,9 +439,21 @@ class ExifMetadataEditor:
                     pass
         
         except subprocess.TimeoutExpired:
+            # Clean up temp file on timeout
+            if temp_file and os.path.exists(temp_file.name):
+                try:
+                    os.unlink(temp_file.name)
+                except:
+                    pass
             messagebox.showerror("Timeout", "ExifTool operation timed out.")
             self.update_status("✗ Operation timed out")
         except FileNotFoundError as e:
+            # Clean up temp file on error
+            if temp_file and os.path.exists(temp_file.name):
+                try:
+                    os.unlink(temp_file.name)
+                except:
+                    pass
             # This is the WinError 2 - ExifTool executable not found
             error_msg = (
                 f"ExifTool executable not found!\n\n"
@@ -437,6 +468,12 @@ class ExifMetadataEditor:
             print(f"ExifTool command: {self.exiftool_cmd}")
             print(f"Full command: {cmd}")
         except Exception as e:
+            # Clean up temp file on any error
+            if temp_file and os.path.exists(temp_file.name):
+                try:
+                    os.unlink(temp_file.name)
+                except:
+                    pass
             messagebox.showerror("Error", f"An error occurred:\n{type(e).__name__}: {e}")
             self.update_status(f"✗ Error: {e}")
             print(f"Exception: {type(e).__name__}: {e}")
