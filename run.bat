@@ -60,6 +60,15 @@ if %errorlevel% neq 0 (
 )
 
 :install_deps
+REM Check if dependencies are already installed
+echo [*] Checking installed dependencies...
+python -c "import requests, PIL, numpy, cv2, colorama, cryptography" >nul 2>&1
+if %errorlevel% equ 0 (
+    echo [+] All dependencies already installed, skipping installation
+    echo.
+    goto :verify_files
+)
+
 REM Install/Update dependencies
 echo [*] Installing/Updating dependencies...
 echo [*] This may take a few minutes on first run...
@@ -96,6 +105,7 @@ if %errorlevel% neq 0 (
 echo [+] Dependencies installed successfully
 echo.
 
+:verify_files
 REM Check if required Python files exist
 echo [*] Verifying required files...
 set MISSING_FILES=0

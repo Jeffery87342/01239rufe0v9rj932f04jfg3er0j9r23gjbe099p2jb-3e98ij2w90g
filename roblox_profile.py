@@ -38,75 +38,92 @@ class RobloxProfile:
     @staticmethod
     def get_username() -> str:
         """
-        Generate a realistic Roblox username.
+        Generate a completely randomized Roblox username with mixed capitalization.
         
         Returns:
             Generated username (3-20 characters, alphanumeric + underscore)
         """
-        separators = ["", "_", "."]
+        # Strategy 1: Fully random alphanumeric (40% chance)
+        if random.random() < 0.4:
+            length = random.randint(8, 15)
+            username = ''.join(
+                random.choice(string.ascii_letters + string.digits) 
+                for _ in range(length)
+            )
+            # Apply random capitalization to each character
+            username = ''.join(
+                c.upper() if random.random() < 0.5 else c.lower() 
+                for c in username
+            )
+            # Add random numbers at the end (30% chance)
+            if random.random() < 0.3:
+                username += str(random.randint(100, 9999))
         
-        # Choose strategy
-        use_human_name = random.random() < 0.4
-        
-        # Select word parts
-        part1 = random.choice(RobloxProfile.HUMAN_NAMES) if use_human_name else random.choice(RobloxProfile.WORD_PARTS)
-        part2 = random.choice(RobloxProfile.WORD_PARTS)
-        
-        # Ensure parts are different
-        while part2.lower() == part1.lower():
-            part2 = random.choice(RobloxProfile.WORD_PARTS)
-        
-        # Optional elements
-        birth_year = str(random.randint(2002, 2024)) if random.random() < 0.2 else ""
-        short_number = str(random.randint(10, 99)) if random.random() < 0.1 else ""
-        
-        # Sometimes add third part
-        if random.random() < 0.2:
-            part3 = random.choice(RobloxProfile.WORD_PARTS)
-            while part3.lower() in [part1.lower(), part2.lower()]:
-                part3 = random.choice(RobloxProfile.WORD_PARTS)
-            parts = [part1, part2, part3]
+        # Strategy 2: Word-based with heavy randomization (60% chance)
         else:
-            parts = [part1, part2]
-        
-        # Join with separator
-        username = "".join(random.choice(separators).join(parts).split())
-        
-        # Special formatting
-        if random.random() < 0.15:
-            username = f"Xx_{username}_xX"
-        elif random.random() < 0.1:
-            username = f"Xx{username}xX"
-        
-        # Add numbers
-        if birth_year:
-            username += birth_year
-        if short_number:
-            username += short_number
-        if random.random() < 0.05:
-            username += "_YT" if random.random() < 0.5 else "YT"
-        
-        # Leet speak substitutions
-        if random.random() < 0.2:
-            username = username.replace("o", "0")
-        if random.random() < 0.2:
-            username = username.replace("e", "3")
-        
-        # Random capitalization
-        parts = username.split("_")
-        if len(parts) > 1 and random.random() < 0.3:
-            random_index = random.randint(0, len(parts) - 1)
-            parts[random_index] = parts[random_index].upper()
-            username = "_".join(parts)
+            separators = ["", "_", ""]
+            
+            # Select word parts
+            use_human_name = random.random() < 0.3
+            part1 = random.choice(RobloxProfile.HUMAN_NAMES) if use_human_name else random.choice(RobloxProfile.WORD_PARTS)
+            part2 = random.choice(RobloxProfile.WORD_PARTS)
+            
+            # Ensure parts are different
+            while part2.lower() == part1.lower():
+                part2 = random.choice(RobloxProfile.WORD_PARTS)
+            
+            # Sometimes add third part (30% chance)
+            if random.random() < 0.3:
+                part3 = random.choice(RobloxProfile.WORD_PARTS)
+                while part3.lower() in [part1.lower(), part2.lower()]:
+                    part3 = random.choice(RobloxProfile.WORD_PARTS)
+                parts = [part1, part2, part3]
+            else:
+                parts = [part1, part2]
+            
+            # Apply COMPLETELY random capitalization to each part
+            randomized_parts = []
+            for part in parts:
+                randomized_part = ''.join(
+                    c.upper() if random.random() < 0.5 else c.lower() 
+                    for c in part
+                )
+                randomized_parts.append(randomized_part)
+            
+            # Join with separator
+            username = random.choice(separators).join(randomized_parts)
+            
+            # Add random numbers (80% chance for more uniqueness)
+            if random.random() < 0.8:
+                num_length = random.randint(2, 4)
+                username += ''.join(str(random.randint(0, 9)) for _ in range(num_length))
+            
+            # Leet speak substitutions (more aggressive, 40% chance)
+            if random.random() < 0.4:
+                username = username.replace("o", "0").replace("O", "0")
+            if random.random() < 0.4:
+                username = username.replace("e", "3").replace("E", "3")
+            if random.random() < 0.3:
+                username = username.replace("a", "4").replace("A", "4")
+            if random.random() < 0.3:
+                username = username.replace("i", "1").replace("I", "1")
         
         # Clean and validate
         username = ''.join(filter(lambda x: x.isalnum() or x == '_', username))
         
         # Ensure length requirements
         if len(username) < 3:
-            username += str(random.randint(10, 99))
+            username += ''.join(str(random.randint(0, 9)) for _ in range(3))
         if len(username) > 20:
             username = username[:20]
+        
+        # Final pass: ensure at least some variation in capitalization
+        if username.islower() or username.isupper():
+            # Make it mixed case
+            username = ''.join(
+                c.upper() if random.random() < 0.5 else c.lower() 
+                for c in username
+            )
         
         return username
     
