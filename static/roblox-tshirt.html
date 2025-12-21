@@ -206,7 +206,9 @@
 
     function fallbackCopy() {
       // Fallback for browsers without Clipboard API support or non-HTTPS contexts
-      // Note: document.execCommand('copy') is deprecated but used here for compatibility with older browsers
+      // Note: document.execCommand('copy') is deprecated but maintained here for compatibility
+      // with older browsers and HTTP contexts. This fallback can be safely removed once all
+      // target browsers support the modern Clipboard API in secure contexts.
       const textArea = document.createElement('textarea');
       textArea.value = generatedXML;
       textArea.style.position = 'fixed';
