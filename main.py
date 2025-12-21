@@ -307,6 +307,14 @@ class ExifMetadataEditor:
     
     def embed_metadata(self):
         """Embed metadata into the selected image"""
+        # First, check if ExifTool command is available
+        if not hasattr(self, 'exiftool_cmd') or not self.exiftool_cmd:
+            messagebox.showerror(
+                "ExifTool Not Configured",
+                "ExifTool path is not configured. Please restart the application and select the ExifTool executable."
+            )
+            return
+        
         # Validate image path
         image_path = self.image_path.get()
         if not image_path:
@@ -367,11 +375,18 @@ class ExifMetadataEditor:
         # Execute ExifTool
         try:
             self.update_status("Embedding metadata...")
+            
+            # Debug: print command being executed
+            print(f"Executing command: {cmd}")
+            print(f"ExifTool path: {self.exiftool_cmd}")
+            
+            # Use shell=False for security and proper path handling
             result = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
+                shell=False
             )
             
             if result.returncode == 0:
@@ -407,9 +422,26 @@ class ExifMetadataEditor:
         except subprocess.TimeoutExpired:
             messagebox.showerror("Timeout", "ExifTool operation timed out.")
             self.update_status("✗ Operation timed out")
+        except FileNotFoundError as e:
+            # This is the WinError 2 - ExifTool executable not found
+            error_msg = (
+                f"ExifTool executable not found!\n\n"
+                f"Command attempted: {self.exiftool_cmd}\n\n"
+                f"Error: {e}\n\n"
+                f"Please ensure ExifTool is properly installed and the path is correct.\n"
+                f"You can browse for exiftool.exe manually by restarting the application."
+            )
+            messagebox.showerror("ExifTool Not Found", error_msg)
+            self.update_status("✗ ExifTool not found")
+            print(f"FileNotFoundError: {e}")
+            print(f"ExifTool command: {self.exiftool_cmd}")
+            print(f"Full command: {cmd}")
         except Exception as e:
-            messagebox.showerror("Error", f"An error occurred:\n{e}")
+            messagebox.showerror("Error", f"An error occurred:\n{type(e).__name__}: {e}")
             self.update_status(f"✗ Error: {e}")
+            print(f"Exception: {type(e).__name__}: {e}")
+            print(f"ExifTool command: {self.exiftool_cmd}")
+            print(f"Full command: {cmd}")
     
     def update_status(self, message):
         """Update status bar message"""
