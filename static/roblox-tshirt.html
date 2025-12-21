@@ -158,10 +158,13 @@
     }
 
     function generateXML() {
-      const textureId = document.getElementById('textureId').value;
+      const textureIdInput = document.getElementById('textureId').value;
       const itemName = document.getElementById('itemName').value || 'Shirt Graphic';
 
-      if (!textureId || textureId <= 0) {
+      // Validate and parse texture ID
+      const textureId = parseInt(textureIdInput, 10);
+      
+      if (!textureIdInput || isNaN(textureId) || textureId <= 0) {
         alert('Please enter a valid positive texture ID!');
         return;
       }
@@ -207,7 +210,10 @@
       const textArea = document.createElement('textarea');
       textArea.value = generatedXML;
       textArea.style.position = 'fixed';
+      textArea.style.top = '-9999px';
       textArea.style.left = '-9999px';
+      textArea.style.opacity = '0';
+      textArea.setAttribute('readonly', '');
       document.body.appendChild(textArea);
       textArea.select();
       try {
