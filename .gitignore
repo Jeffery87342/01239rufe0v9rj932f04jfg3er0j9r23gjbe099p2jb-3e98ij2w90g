@@ -3,3 +3,21 @@ dist
 .DS_Store
 **/.DS_Store
 package-lock.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Account and configuration data
+accounts.txt
+config.json
+*.log
+
+# Don't commit actual proxies (keep template only)
+# proxies.txt
