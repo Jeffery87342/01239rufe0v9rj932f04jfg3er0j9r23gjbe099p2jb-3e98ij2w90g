@@ -71,7 +71,7 @@ class Util:
             proxy_file: Path to proxy file
             
         Returns:
-            List of proxy URLs
+            List of valid proxy URLs (filtered)
         """
         proxies = []
         
@@ -82,7 +82,11 @@ class Util:
                         line = line.strip()
                         # Skip empty lines and comments
                         if line and not line.startswith('#'):
-                            proxies.append(line)
+                            # Validate proxy format before adding
+                            if Util.validate_proxy(line):
+                                proxies.append(line)
+                            else:
+                                print(f"[!] Skipping invalid proxy: {line}")
             except Exception as e:
                 print(f"[!] Error loading proxies: {e}")
         

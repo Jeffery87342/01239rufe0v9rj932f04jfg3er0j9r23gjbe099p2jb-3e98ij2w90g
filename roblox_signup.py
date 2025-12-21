@@ -38,6 +38,7 @@ class RobloxAccountCreator:
         self.proxy = proxy
         self.debug = debug
         self.last_error = None
+        self.csrf_token = None
         
         # Validate and set proxy
         if proxy:
@@ -91,6 +92,42 @@ class RobloxAccountCreator:
         if self.debug:
             timestamp = datetime.now().strftime('%H:%M:%S')
             print(f"[{timestamp}] {message}")
+    
+    def get_csrf_token(self) -> bool:
+        """
+        Get CSRF token from Roblox.
+        Required for all POST requests to Roblox API.
+        
+        Returns:
+            True if token retrieved successfully
+        """
+        try:
+            # First, visit Roblox homepage to establish session
+            response = self.session.get("https://www.roblox.com/", timeout=10)
+            
+            # Trigger CSRF token by making a POST request
+            # Roblox returns the token in the response header
+            response = self.session.post(
+                self.USERNAME_VALIDATION_URL,
+                json={},
+                timeout=10
+            )
+            
+            # Extract CSRF token from response headers
+            csrf_token = response.headers.get('x-csrf-token')
+            
+            if csrf_token:
+                self.csrf_token = csrf_token
+                self.session.headers['X-CSRF-TOKEN'] = csrf_token
+                self._debug_print(f"CSRF token acquired")
+                return True
+            else:
+                self._handle_error("CSRF ERROR", "Failed to get CSRF token")
+                return False
+                
+        except Exception as e:
+            self._handle_error("CSRF ERROR", f"Cannot retrieve CSRF token: {str(e)}")
+            return False
     
     def _handle_error(self, error_type: str, details: str = "") -> None:
         """
@@ -195,6 +232,11 @@ class RobloxAccountCreator:
             True if username is available, False otherwise
         """
         try:
+            # Ensure we have CSRF token
+            if not self.csrf_token:
+                if not self.get_csrf_token():
+                    return False
+            
             payload = {
                 "username": username,
                 "birthday": "2000-01-01T00:00:00.000Z",
@@ -211,6 +253,22 @@ class RobloxAccountCreator:
                 data = response.json()
                 is_valid = data.get('code') == 0  # 0 means username is valid
                 return is_valid
+            elif response.status_code == 403:
+                # CSRF token might be invalid, refresh it
+                self._debug_print("Got 403, refreshing CSRF token...")
+                if self.get_csrf_token():
+                    # Retry with new token
+                    response = self.session.post(
+                        self.USERNAME_VALIDATION_URL,
+                        json=payload,
+                        timeout=10
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        return data.get('code') == 0
+                
+                self._handle_error("API ERROR", f"Username validation returned 403 (Access Denied)")
+                return False
             elif response.status_code == 429:
                 self._handle_error("RATE LIMITED", "Username validation")
                 return False
