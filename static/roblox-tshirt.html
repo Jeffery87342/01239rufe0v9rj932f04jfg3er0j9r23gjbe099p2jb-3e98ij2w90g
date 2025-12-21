@@ -122,7 +122,7 @@
 
     <div class="input-group">
       <label for="textureId">Texture ID:</label>
-      <input type="number" id="textureId" placeholder="Enter Roblox texture asset ID (e.g., 123456789)" required>
+      <input type="number" id="textureId" placeholder="Enter Roblox texture asset ID (e.g., 123456789)" min="1" required>
     </div>
 
     <div class="input-group">
@@ -152,8 +152,8 @@
       const textureId = document.getElementById('textureId').value;
       const itemName = document.getElementById('itemName').value || 'Shirt Graphic';
 
-      if (!textureId) {
-        alert('Please enter a texture ID!');
+      if (!textureId || textureId <= 0) {
+        alert('Please enter a valid positive texture ID!');
         return;
       }
 
@@ -162,7 +162,7 @@
   <External>nil</External>
   <Item class="ShirtGraphic" referent="RBX0">
     <Properties>
-      <Content name="Graphic"><url>http://www.roblox.com/asset/?id=${textureId}</url></Content>
+      <Content name="Graphic"><url>https://www.roblox.com/asset/?id=${textureId}</url></Content>
       <string name="Name">${itemName}</string>
     </Properties>
   </Item>
@@ -178,12 +178,34 @@
         return;
       }
 
-      navigator.clipboard.writeText(generatedXML).then(() => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(generatedXML).then(() => {
+          alert('XML copied to clipboard!');
+        }).catch(err => {
+          console.error('Failed to copy:', err);
+          fallbackCopy();
+        });
+      } else {
+        fallbackCopy();
+      }
+    }
+
+    function fallbackCopy() {
+      // Fallback for browsers without Clipboard API support or non-HTTPS contexts
+      const textArea = document.createElement('textarea');
+      textArea.value = generatedXML;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
         alert('XML copied to clipboard!');
-      }).catch(err => {
-        console.error('Failed to copy:', err);
-        alert('Failed to copy to clipboard. Please copy manually.');
-      });
+      } catch (err) {
+        console.error('Fallback copy failed:', err);
+        alert('Failed to copy to clipboard. Please copy manually from the output below.');
+      }
+      document.body.removeChild(textArea);
     }
 
     function downloadXML() {
