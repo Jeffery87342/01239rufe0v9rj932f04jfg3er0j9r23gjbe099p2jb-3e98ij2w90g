@@ -1,191 +1,53 @@
 @echo off
-REM ===================================================================
-REM Roblox Account Creator Launcher
-REM Automatically installs dependencies and runs the application
-REM ===================================================================
+title EXIF Metadata Editor
+color 0A
 
-title Roblox Account Creator - Launcher
-color 0B
-
-echo.
-echo ================================================================
-echo                ROBLOX ACCOUNT CREATOR LAUNCHER
-echo ================================================================
+echo ================================================
+echo     EXIF Metadata Editor - PNG Image Tool
+echo ================================================
 echo.
 
 REM Check if Python is installed
-echo [*] Checking for Python installation...
 python --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo [!] ERROR: Python is not installed or not in PATH
-    echo [!] Please install Python 3.7 or higher from python.org
-    echo.
+if errorlevel 1 (
+    echo [ERROR] Python is not installed or not in PATH
+    echo Please install Python 3.7 or higher from python.org
     pause
     exit /b 1
 )
 
-REM Display Python version
-for /f "tokens=*" %%i in ('python --version') do set PYTHON_VERSION=%%i
-echo [+] Found: %PYTHON_VERSION%
+echo [+] Python detected
 echo.
 
-REM Check if requirements.txt exists
-if not exist "requirements.txt" (
-    echo [!] ERROR: requirements.txt not found
-    echo [!] Please ensure all files are in the correct directory
+REM Check if ExifTool is installed
+exiftool -ver >nul 2>&1
+if errorlevel 1 (
+    echo [WARNING] ExifTool not detected
+    echo.
+    echo Please install ExifTool from: https://exiftool.org/
+    echo.
+    echo Installation steps:
+    echo 1. Download ExifTool for Windows
+    echo 2. Extract the .zip file
+    echo 3. Rename 'exiftool(-k).exe' to 'exiftool.exe'
+    echo 4. Add to system PATH or place in this folder
+    echo.
+    echo The application will start, but won't work without ExifTool.
     echo.
     pause
-    exit /b 1
-)
-
-REM Check if virtual environment exists
-if not exist "venv\" (
-    echo [*] Creating virtual environment...
-    python -m venv venv
-    if %errorlevel% neq 0 (
-        echo [!] ERROR: Failed to create virtual environment
-        echo [!] Trying to continue without virtual environment...
-        goto :install_deps
-    )
-    echo [+] Virtual environment created successfully
+) else (
+    echo [+] ExifTool detected
     echo.
 )
 
-REM Activate virtual environment
-echo [*] Activating virtual environment...
-call venv\Scripts\activate.bat
-if %errorlevel% neq 0 (
-    echo [!] WARNING: Could not activate virtual environment
-    echo [!] Continuing with system Python...
-)
-
-:install_deps
-REM Check if dependencies are already installed
-echo [*] Checking installed dependencies...
-python -c "import requests, PIL, numpy, cv2, colorama, cryptography, socks" >nul 2>&1
-if %errorlevel% equ 0 (
-    echo [+] All dependencies already installed, skipping installation
-    echo.
-    goto :verify_files
-)
-
-REM Install/Update dependencies
-echo [*] Installing/Updating dependencies...
-echo [*] This may take a few minutes on first run...
-echo.
-python -m pip install --upgrade pip --quiet
-
-REM Install packages individually for better Windows compatibility
-REM Use --only-binary to force pre-built wheels (no compilation needed)
-echo [*] Installing requests...
-python -m pip install --only-binary=:all: "requests>=2.31.0" --quiet
-echo [*] Installing pillow...
-python -m pip install --only-binary=:all: "pillow>=10.0.0" --quiet
-echo [*] Installing numpy...
-python -m pip install --only-binary=:all: "numpy>=1.21.0" --quiet
-echo [*] Installing opencv-python-headless...
-python -m pip install --only-binary=:all: "opencv-python-headless>=4.5.0" --quiet
-echo [*] Installing colorama...
-python -m pip install --only-binary=:all: "colorama>=0.4.6" --quiet
-echo [*] Installing cryptography...
-python -m pip install --only-binary=:all: "cryptography>=41.0.0" --quiet
-echo [*] Installing PySocks (for SOCKS proxy support)...
-python -m pip install --only-binary=:all: "pysocks>=1.7.1" --quiet
-
-if %errorlevel% neq 0 (
-    echo [!] ERROR: Failed to install dependencies
-    echo [!] If you see compiler errors, try:
-    echo [!]   1. Close this window
-    echo [!]   2. Open Command Prompt as Administrator
-    echo [!]   3. Run: python -m pip install --upgrade pip
-    echo [!]   4. Run this launcher again
-    echo.
-    pause
-    exit /b 1
-)
-
-echo [+] Dependencies installed successfully
+echo [*] Starting EXIF Metadata Editor...
 echo.
 
-:verify_files
-REM Check if required Python files exist
-echo [*] Verifying required files...
-set MISSING_FILES=0
-
-if not exist "main.py" (
-    echo [!] ERROR: main.py not found
-    set MISSING_FILES=1
-)
-if not exist "roblox_signup.py" (
-    echo [!] ERROR: roblox_signup.py not found
-    set MISSING_FILES=1
-)
-if not exist "funcaptcha_solver.py" (
-    echo [!] ERROR: funcaptcha_solver.py not found
-    set MISSING_FILES=1
-)
-if not exist "funcaptcha_utils.py" (
-    echo [!] ERROR: funcaptcha_utils.py not found
-    set MISSING_FILES=1
-)
-if not exist "generate.py" (
-    echo [!] ERROR: generate.py not found
-    set MISSING_FILES=1
-)
-if not exist "generate_counter.py" (
-    echo [!] ERROR: generate_counter.py not found
-    set MISSING_FILES=1
-)
-if not exist "util.py" (
-    echo [!] ERROR: util.py not found
-    set MISSING_FILES=1
-)
-
-if %MISSING_FILES% equ 1 (
-    echo [!] ERROR: Some required files are missing
-    echo.
-    pause
-    exit /b 1
-)
-
-echo [+] All required files present
-echo.
-
-REM Create accounts.txt if it doesn't exist
-if not exist "accounts.txt" (
-    echo [*] Creating accounts.txt file...
-    type nul > accounts.txt
-)
-
-REM Display startup message
-echo ================================================================
-echo                    STARTING APPLICATION
-echo ================================================================
-echo.
-timeout /t 2 /nobreak >nul
-
-REM Run the main application with threading
+REM Run the application
 python main.py
 
-REM Check if the program exited with an error
-if %errorlevel% neq 0 (
+if errorlevel 1 (
     echo.
-    echo ================================================================
-    echo [!] Application exited with an error
-    echo ================================================================
-    echo.
+    echo [ERROR] Application crashed or exited with error
     pause
-    exit /b %errorlevel%
 )
-
-REM Deactivate virtual environment if it was activated
-if defined VIRTUAL_ENV (
-    call venv\Scripts\deactivate.bat
-)
-
-echo.
-echo ================================================================
-echo                   APPLICATION CLOSED
-echo ================================================================
-echo.
-pause

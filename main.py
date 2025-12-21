@@ -1,278 +1,351 @@
 """
-Main Account Generator with Threading and CPM Tracking
-Multi-threaded Roblox account generator with real-time statistics.
+EXIF Metadata Editor - GUI Tool for PNG Images
+Embeds custom metadata into PNG images using ExifTool
 """
 
-import sys
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox, scrolledtext
+import subprocess
 import os
-import ctypes
-from time import sleep
-from threading import Thread, Event
-from colorama import init, Fore, Style
-from generate_counter import generate_counter
-from generate import Generate
-from util import Util
-
-# Initialize colorama
-init(autoreset=True)
-
-# Load configuration
-config = Util.get_config()
-
-THREAD_AMOUNT = config.get("threads", 5)
-USE_PROXIES = config.get("use_proxies", True)
-
-# Global stop event
-stop_event = Event()
+import sys
+from pathlib import Path
 
 
-def clear_screen():
-    """Clear the console screen."""
-    os.system('cls' if os.name == 'nt' else 'clear')
-
-
-def set_console_title(title: str):
-    """
-    Set the console window title.
-    
-    Args:
-        title: Title string
-    """
-    try:
-        if os.name == 'nt':  # Windows
-            ctypes.windll.kernel32.SetConsoleTitleW(title)
-        else:  # Linux/Mac
-            sys.stdout.write(f"\x1b]2;{title}\x07")
-    except:
-        pass
-
-
-def cpm_checker() -> None:
-    """Monitor and update console title with statistics."""
-    while not stop_event.is_set():
-        elapsed = generate_counter.get_elapsed_seconds()
-        generated = generate_counter.get_generated()
-        failed = generate_counter.get_failed()
-        cpm = generate_counter.get_cpm()
+class ExifMetadataEditor:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("EXIF Metadata Editor")
+        self.root.geometry("700x600")
+        self.root.resizable(True, True)
         
-        # Format time
-        time_str = Util.format_time(elapsed)
+        # Configure style
+        self.setup_styles()
         
-        # Update console title
-        title = f"Elapsed: {time_str} | Generated: {generated} | Failed: {failed} | CPM: {cpm}"
-        set_console_title(title)
+        # Variables
+        self.image_path = tk.StringVar()
+        self.selected_tags = []
+        self.metadata_text = tk.StringVar()
+        self.exiftool_cmd = 'exiftool'  # Will be set by check_exiftool()
         
-        sleep(1)
-
-
-def print_header():
-    """Print application header."""
-    clear_screen()
-    print(f"{Fore.CYAN}{Style.BRIGHT}")
-    print("╔═══════════════════════════════════════════════════════════════════╗")
-    print("║                                                                   ║")
-    print("║        ROBLOX ACCOUNT GENERATOR - MULTI-THREADED                 ║")
-    print("║                                                                   ║")
-    print("║              Ultra-Fast FunCaptcha Bypass + Threading            ║")
-    print("║                                                                   ║")
-    print("╚═══════════════════════════════════════════════════════════════════╝")
-    print(f"{Style.RESET_ALL}\n")
-
-
-def print_config():
-    """Print current configuration."""
-    print(f"{Fore.YELLOW}{Style.BRIGHT}CONFIGURATION{Style.RESET_ALL}")
-    print(f"{Fore.WHITE}{'─'*70}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}Threads:       {Fore.WHITE}{THREAD_AMOUNT}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}Proxies:       {Fore.WHITE}{'Enabled' if USE_PROXIES else 'Disabled'}{Style.RESET_ALL}")
-    
-    if USE_PROXIES:
-        proxies = Util.load_proxies()
-        print(f"{Fore.CYAN}Proxy Count:   {Fore.WHITE}{len(proxies)}{Style.RESET_ALL}")
-    
-    print(f"{Fore.CYAN}Output File:   {Fore.WHITE}{config.get('output_file', 'accounts.txt')}{Style.RESET_ALL}")
-    print(f"{Fore.WHITE}{'─'*70}{Style.RESET_ALL}\n")
-
-
-def print_stats():
-    """Print live statistics."""
-    generated = generate_counter.get_generated()
-    failed = generate_counter.get_failed()
-    total = generate_counter.get_total()
-    success_rate = generate_counter.get_success_rate()
-    cpm = generate_counter.get_cpm()
-    elapsed = generate_counter.get_elapsed_seconds()
-    
-    print(f"\n{Fore.CYAN}{Style.BRIGHT}{'═'*70}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}{Style.BRIGHT}                         LIVE STATISTICS{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}{Style.BRIGHT}{'═'*70}{Style.RESET_ALL}")
-    
-    print(f"{Fore.GREEN}✓ Generated:      {generated}{Style.RESET_ALL}")
-    print(f"{Fore.RED}✗ Failed:         {failed}{Style.RESET_ALL}")
-    print(f"{Fore.WHITE}Total Attempts:   {total}{Style.RESET_ALL}")
-    print(f"{Fore.YELLOW}Success Rate:     {success_rate:.1f}%{Style.RESET_ALL}")
-    print(f"{Fore.MAGENTA}CPM:              {cpm}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}Elapsed:          {Util.format_time(elapsed)}{Style.RESET_ALL}")
-    
-    # Show error breakdown
-    errors = generate_counter.get_errors()
-    if errors:
-        print(f"\n{Fore.YELLOW}Error Breakdown:{Style.RESET_ALL}")
-        for error_type, count in sorted(errors.items(), key=lambda x: x[1], reverse=True):
-            print(f"  {Fore.RED}• {error_type}: {count}{Style.RESET_ALL}")
-    
-    print(f"{Fore.CYAN}{Style.BRIGHT}{'═'*70}{Style.RESET_ALL}\n")
-
-
-def display_realtime_stats():
-    """Display real-time statistics in a loop."""
-    while not stop_event.is_set():
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print_header()
-        print_config()
-        print_stats()
+        # Build UI
+        self.build_ui()
         
-        print(f"{Fore.YELLOW}Press Ctrl+C to stop generation...{Style.RESET_ALL}")
-        
-        sleep(2)
-
-
-def main() -> None:
-    """Main function with multi-threading support."""
-    print_header()
-    print_config()
+        # Check for ExifTool
+        self.check_exiftool()
     
-    # Get target number of accounts
-    try:
-        target_str = input(f"{Fore.CYAN}How many accounts would you like to generate? {Style.RESET_ALL}").strip()
-        target = int(target_str)
+    def setup_styles(self):
+        """Configure UI styles"""
+        style = ttk.Style()
+        style.theme_use('clam')
         
-        if target <= 0:
-            print(f"{Fore.RED}Invalid number. Must be greater than 0.{Style.RESET_ALL}")
+        # Configure colors
+        bg_color = "#2b2b2b"
+        fg_color = "#ffffff"
+        accent_color = "#0d7377"
+        
+        self.root.configure(bg=bg_color)
+        
+        style.configure("TFrame", background=bg_color)
+        style.configure("TLabel", background=bg_color, foreground=fg_color, font=("Segoe UI", 10))
+        style.configure("Title.TLabel", font=("Segoe UI", 14, "bold"), foreground=accent_color)
+        style.configure("TButton", font=("Segoe UI", 10), padding=8)
+        style.configure("Success.TButton", background="#28a745", foreground="white")
+        
+    def build_ui(self):
+        """Build the user interface"""
+        # Main container
+        main_frame = ttk.Frame(self.root, padding="20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Title
+        title = ttk.Label(main_frame, text="EXIF Metadata Editor", style="Title.TLabel")
+        title.pack(pady=(0, 20))
+        
+        # Step 1: Image Path Selection
+        self.create_image_selection_section(main_frame)
+        
+        # Separator
+        ttk.Separator(main_frame, orient='horizontal').pack(fill=tk.X, pady=15)
+        
+        # Step 2: Tag Selection
+        self.create_tag_selection_section(main_frame)
+        
+        # Separator
+        ttk.Separator(main_frame, orient='horizontal').pack(fill=tk.X, pady=15)
+        
+        # Step 3: Metadata Input
+        self.create_metadata_input_section(main_frame)
+        
+        # Separator
+        ttk.Separator(main_frame, orient='horizontal').pack(fill=tk.X, pady=15)
+        
+        # Step 4: Embed Button
+        self.create_embed_section(main_frame)
+        
+        # Status Bar
+        self.status_label = ttk.Label(main_frame, text="Ready", foreground="#888888")
+        self.status_label.pack(side=tk.BOTTOM, pady=(10, 0))
+    
+    def create_image_selection_section(self, parent):
+        """Create image path selection section"""
+        section_frame = ttk.Frame(parent)
+        section_frame.pack(fill=tk.X, pady=5)
+        
+        label = ttk.Label(section_frame, text="Step 1: Select PNG Image", font=("Segoe UI", 11, "bold"))
+        label.pack(anchor=tk.W, pady=(0, 10))
+        
+        path_frame = ttk.Frame(section_frame)
+        path_frame.pack(fill=tk.X)
+        
+        entry = ttk.Entry(path_frame, textvariable=self.image_path, font=("Segoe UI", 10))
+        entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
+        
+        browse_btn = ttk.Button(path_frame, text="Browse...", command=self.browse_image)
+        browse_btn.pack(side=tk.LEFT)
+    
+    def create_tag_selection_section(self, parent):
+        """Create metadata tag selection section"""
+        section_frame = ttk.Frame(parent)
+        section_frame.pack(fill=tk.X, pady=5)
+        
+        label = ttk.Label(section_frame, text="Step 2: Select Metadata Tags", font=("Segoe UI", 11, "bold"))
+        label.pack(anchor=tk.W, pady=(0, 10))
+        
+        info_label = ttk.Label(section_frame, text="Choose which metadata tags to modify:", foreground="#888888")
+        info_label.pack(anchor=tk.W, pady=(0, 5))
+        
+        # Tags frame with checkboxes
+        tags_frame = ttk.Frame(section_frame)
+        tags_frame.pack(fill=tk.X, pady=5)
+        
+        # Define available tags
+        self.tag_vars = {}
+        tags = [
+            ("ImageDescription", "General description of the image"),
+            ("Comment", "User comment field"),
+            ("UserComment", "EXIF user comment"),
+            ("Copyright", "Copyright information"),
+            ("Artist", "Creator/artist name"),
+            ("Software", "Software used to create image")
+        ]
+        
+        for i, (tag, description) in enumerate(tags):
+            var = tk.BooleanVar()
+            self.tag_vars[tag] = var
+            
+            cb = ttk.Checkbutton(tags_frame, text=f"{tag}", variable=var)
+            cb.grid(row=i//2, column=(i%2)*2, sticky=tk.W, padx=10, pady=3)
+            
+            desc_label = ttk.Label(tags_frame, text=f"({description})", foreground="#666666", font=("Segoe UI", 8))
+            desc_label.grid(row=i//2, column=(i%2)*2+1, sticky=tk.W, padx=5, pady=3)
+    
+    def create_metadata_input_section(self, parent):
+        """Create metadata text input section"""
+        section_frame = ttk.Frame(parent)
+        section_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        
+        label = ttk.Label(section_frame, text="Step 3: Enter Metadata Content", font=("Segoe UI", 11, "bold"))
+        label.pack(anchor=tk.W, pady=(0, 10))
+        
+        info_label = ttk.Label(section_frame, text="Paste or type the content to embed:", foreground="#888888")
+        info_label.pack(anchor=tk.W, pady=(0, 5))
+        
+        # Text area
+        self.text_area = scrolledtext.ScrolledText(
+            section_frame, 
+            height=8, 
+            font=("Consolas", 10),
+            bg="#1e1e1e",
+            fg="#ffffff",
+            insertbackground="#ffffff",
+            relief=tk.FLAT,
+            borderwidth=2
+        )
+        self.text_area.pack(fill=tk.BOTH, expand=True)
+    
+    def create_embed_section(self, parent):
+        """Create embed button section"""
+        section_frame = ttk.Frame(parent)
+        section_frame.pack(fill=tk.X, pady=10)
+        
+        embed_btn = ttk.Button(
+            section_frame, 
+            text="✓ Embed Metadata into Image", 
+            command=self.embed_metadata,
+            style="Success.TButton"
+        )
+        embed_btn.pack(pady=10)
+    
+    def browse_image(self):
+        """Open file dialog to select PNG image"""
+        filename = filedialog.askopenfilename(
+            title="Select PNG Image",
+            filetypes=[("PNG Images", "*.png"), ("All Files", "*.*")]
+        )
+        if filename:
+            self.image_path.set(filename)
+            self.update_status(f"Selected: {os.path.basename(filename)}")
+    
+    def check_exiftool(self):
+        """Check if ExifTool is available"""
+        # Try different command names (exiftool on Linux/Mac, exiftool.exe on Windows)
+        commands_to_try = ['exiftool', 'exiftool.exe']
+        
+        for cmd in commands_to_try:
+            try:
+                result = subprocess.run([cmd, '-ver'], capture_output=True, text=True, timeout=5, shell=False)
+                if result.returncode == 0:
+                    version = result.stdout.strip()
+                    self.update_status(f"✓ ExifTool v{version} ready")
+                    self.exiftool_cmd = cmd  # Store which command works
+                    return True
+            except (FileNotFoundError, OSError):
+                continue
+            except Exception as e:
+                print(f"Error checking {cmd}: {e}")
+                continue
+        
+        # If we get here, ExifTool was not found
+        self.show_exiftool_error()
+        self.exiftool_cmd = 'exiftool'  # Default fallback
+        return False
+    
+    def show_exiftool_error(self):
+        """Show error when ExifTool is not found"""
+        error_msg = (
+            "ExifTool is not installed or not found in system PATH.\n\n"
+            "INSTALLATION INSTRUCTIONS:\n\n"
+            "Windows:\n"
+            "1. Download exiftool from: https://exiftool.org/\n"
+            "2. Extract exiftool(-k).exe and rename to exiftool.exe\n"
+            "3. Place in C:\\Windows\\ or add folder to PATH\n\n"
+            "Linux:\n"
+            "  sudo apt-get install libimage-exiftool-perl\n\n"
+            "macOS:\n"
+            "  brew install exiftool\n\n"
+            "After installation, restart this application."
+        )
+        messagebox.showerror("ExifTool Not Found", error_msg)
+        self.update_status("⚠ ERROR: ExifTool not found - See installation instructions")
+    
+    def embed_metadata(self):
+        """Embed metadata into the selected image"""
+        # Validate image path
+        image_path = self.image_path.get()
+        if not image_path:
+            messagebox.showwarning("No Image", "Please select a PNG image first.")
             return
         
-    except ValueError:
-        print(f"{Fore.RED}Invalid input. Please enter a number.{Style.RESET_ALL}")
-        return
-    except KeyboardInterrupt:
-        print(f"\n{Fore.YELLOW}Cancelled.{Style.RESET_ALL}")
-        return
+        if not os.path.exists(image_path):
+            messagebox.showerror("File Not Found", f"The file does not exist:\n{image_path}")
+            return
+        
+        if not image_path.lower().endswith('.png'):
+            messagebox.showwarning("Invalid Format", "Please select a PNG image file.")
+            return
+        
+        # Get selected tags
+        selected_tags = [tag for tag, var in self.tag_vars.items() if var.get()]
+        if not selected_tags:
+            messagebox.showwarning("No Tags Selected", "Please select at least one metadata tag to modify.")
+            return
+        
+        # Get metadata text
+        metadata_content = self.text_area.get("1.0", tk.END).strip()
+        if not metadata_content:
+            messagebox.showwarning("No Content", "Please enter the metadata content to embed.")
+            return
+        
+        # Confirm action
+        confirm_msg = f"Embed metadata into:\n{os.path.basename(image_path)}\n\n"
+        confirm_msg += f"Tags: {', '.join(selected_tags)}\n\n"
+        confirm_msg += "This will modify the original file. Continue?"
+        
+        if not messagebox.askyesno("Confirm Embedding", confirm_msg):
+            return
+        
+        # Create backup
+        backup_path = image_path + ".backup"
+        try:
+            import shutil
+            shutil.copy2(image_path, backup_path)
+            self.update_status("Backup created...")
+        except Exception as e:
+            messagebox.showerror("Backup Failed", f"Could not create backup:\n{e}")
+            return
+        
+        # Build ExifTool command
+        cmd = [self.exiftool_cmd]
+        
+        # Add overwrite flag (no backup)
+        cmd.append('-overwrite_original')
+        
+        # Add each selected tag with the metadata content
+        for tag in selected_tags:
+            cmd.append(f'-{tag}={metadata_content}')
+        
+        # Add the image path
+        cmd.append(image_path)
+        
+        # Execute ExifTool
+        try:
+            self.update_status("Embedding metadata...")
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            
+            if result.returncode == 0:
+                # Success
+                messagebox.showinfo(
+                    "Success!",
+                    f"Metadata successfully embedded into:\n{os.path.basename(image_path)}\n\n"
+                    f"Tags modified: {', '.join(selected_tags)}\n"
+                    f"Backup saved as: {os.path.basename(backup_path)}"
+                )
+                self.update_status("✓ Metadata embedded successfully!")
+                
+                # Show output details
+                if result.stdout:
+                    print(f"ExifTool output: {result.stdout}")
+            else:
+                # Error
+                error_msg = result.stderr if result.stderr else "Unknown error"
+                messagebox.showerror(
+                    "Embedding Failed",
+                    f"ExifTool failed to embed metadata:\n\n{error_msg}"
+                )
+                self.update_status("✗ Embedding failed")
+                
+                # Restore backup
+                try:
+                    import shutil
+                    shutil.copy2(backup_path, image_path)
+                    messagebox.showinfo("Restored", "Original file restored from backup.")
+                except:
+                    pass
+        
+        except subprocess.TimeoutExpired:
+            messagebox.showerror("Timeout", "ExifTool operation timed out.")
+            self.update_status("✗ Operation timed out")
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred:\n{e}")
+            self.update_status(f"✗ Error: {e}")
     
-    # Load proxies if enabled
-    proxies = []
-    use_proxies_local = USE_PROXIES
-    if use_proxies_local:
-        proxies = Util.load_proxies()
-        
-        if not proxies:
-            print(f"{Fore.YELLOW}[!] Warning: Proxies enabled but no valid proxies found{Style.RESET_ALL}")
-            print(f"{Fore.YELLOW}[!] Add proxies to 'proxies.txt' or disable 'use_proxies' in config.json{Style.RESET_ALL}")
-            print(f"{Fore.CYAN}[*] Continuing WITHOUT proxies...{Style.RESET_ALL}\n")
-            use_proxies_local = False
-            sleep(2)
-    
-    print(f"\n{Fore.GREEN}[+] Starting generation with {THREAD_AMOUNT} threads...{Style.RESET_ALL}")
-    print(f"{Fore.GREEN}[+] Target: {target} accounts{Style.RESET_ALL}")
-    if use_proxies_local and proxies:
-        print(f"{Fore.GREEN}[+] Using {len(proxies)} proxies{Style.RESET_ALL}")
-    else:
-        print(f"{Fore.YELLOW}[!] Running WITHOUT proxies{Style.RESET_ALL}")
-    print()
-    
-    sleep(2)
-    
-    # Start counter
-    generate_counter.reset()
-    generate_counter.start()
-    
-    # Start worker threads
-    threads = []
-    
-    for i in range(THREAD_AMOUNT):
-        # Assign proxy if available
-        proxy = None
-        if proxies:
-            proxy = proxies[i % len(proxies)]
-        
-        # Create thread
-        t = Thread(
-            target=Generate.gen_with_target,
-            args=(generate_counter, target, proxy, stop_event)
-        )
-        threads.append(t)
-        t.daemon = True
-        t.start()
-    
-    # Start CPM checker thread
-    cpm_thread = Thread(target=cpm_checker)
-    cpm_thread.daemon = True
-    cpm_thread.start()
-    
-    # Start stats display thread
-    stats_thread = Thread(target=display_realtime_stats)
-    stats_thread.daemon = True
-    stats_thread.start()
-    
-    try:
-        # Wait for target to be reached or user interrupt
-        while generate_counter.get_generated() < target:
-            sleep(0.5)
-        
-        # Target reached
-        print(f"\n{Fore.GREEN}{Style.BRIGHT}[+] TARGET REACHED!{Style.RESET_ALL}")
-        
-    except KeyboardInterrupt:
-        print(f"\n\n{Fore.YELLOW}[!] Stopping generation...{Style.RESET_ALL}")
-    
-    finally:
-        # Signal threads to stop
-        stop_event.set()
-        
-        # Wait a moment for threads to finish
-        sleep(2)
-        
-        # Print final statistics
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print_header()
-        
-        print(f"{Fore.CYAN}{Style.BRIGHT}{'═'*70}{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}{Style.BRIGHT}                      FINAL STATISTICS{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}{Style.BRIGHT}{'═'*70}{Style.RESET_ALL}")
-        
-        generated = generate_counter.get_generated()
-        failed = generate_counter.get_failed()
-        total = generate_counter.get_total()
-        success_rate = generate_counter.get_success_rate()
-        elapsed = generate_counter.get_elapsed_seconds()
-        
-        print(f"{Fore.GREEN}✓ Generated:      {generated}{Style.RESET_ALL}")
-        print(f"{Fore.RED}✗ Failed:         {failed}{Style.RESET_ALL}")
-        print(f"{Fore.WHITE}Total Attempts:   {total}{Style.RESET_ALL}")
-        print(f"{Fore.YELLOW}Success Rate:     {success_rate:.1f}%{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}Total Time:       {Util.format_time(elapsed)}{Style.RESET_ALL}")
-        
-        if generated > 0:
-            avg_time = elapsed / generated
-            print(f"{Fore.MAGENTA}Avg per Account:  {avg_time:.1f} seconds{Style.RESET_ALL}")
-        
-        # Show error breakdown
-        errors = generate_counter.get_errors()
-        if errors:
-            print(f"\n{Fore.YELLOW}Error Breakdown:{Style.RESET_ALL}")
-            for error_type, count in sorted(errors.items(), key=lambda x: x[1], reverse=True):
-                print(f"  {Fore.RED}• {error_type}: {count}{Style.RESET_ALL}")
-        
-        print(f"{Fore.CYAN}{Style.BRIGHT}{'═'*70}{Style.RESET_ALL}")
-        
-        print(f"\n{Fore.GREEN}All accounts saved to '{config.get('output_file', 'accounts.txt')}'{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}Thank you for using Roblox Account Generator!{Style.RESET_ALL}\n")
+    def update_status(self, message):
+        """Update status bar message"""
+        self.status_label.config(text=message)
+        self.root.update_idletasks()
+
+
+def main():
+    """Main entry point"""
+    root = tk.Tk()
+    app = ExifMetadataEditor(root)
+    root.mainloop()
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(f"\n{Fore.RED}[!] Fatal error: {e}{Style.RESET_ALL}")
-        import traceback
-        traceback.print_exc()
-        input(f"\n{Fore.CYAN}Press Enter to exit...{Style.RESET_ALL}")
+    main()

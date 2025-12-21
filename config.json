@@ -1,8 +1,0 @@
-{
-  "threads": 5,
-  "delay": 3,
-  "proxy_file": "proxies.txt",
-  "output_file": "accounts.txt",
-  "use_proxies": true,
-  "debug": false
-}
