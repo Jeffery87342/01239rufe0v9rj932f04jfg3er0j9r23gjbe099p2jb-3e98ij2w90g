@@ -46,8 +46,5 @@ echo.
 REM Run the application
 python main.py
 
-if errorlevel 1 (
-    echo.
-    echo [ERROR] Application crashed or exited with error
-    pause
-)
+REM Always pause at the end so user can see any output
+pause

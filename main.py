@@ -8,6 +8,7 @@ from tkinter import ttk, filedialog, messagebox, scrolledtext
 import subprocess
 import os
 import sys
+import json
 from pathlib import Path
 
 
@@ -26,6 +27,7 @@ class ExifMetadataEditor:
         self.selected_tags = []
         self.metadata_text = tk.StringVar()
         self.exiftool_cmd = 'exiftool'  # Will be set by check_exiftool()
+        self.config_file = Path.home() / '.exif_metadata_editor_config.json'
         
         # Build UI
         self.build_ui()
@@ -188,6 +190,11 @@ class ExifMetadataEditor:
     
     def check_exiftool(self):
         """Check if ExifTool is available"""
+        # First, try to load saved custom path
+        custom_path = self.load_exiftool_path()
+        if custom_path and self.test_exiftool_path(custom_path):
+            return True
+        
         # Try different command names (exiftool on Linux/Mac, exiftool.exe on Windows)
         commands_to_try = ['exiftool', 'exiftool.exe']
         
@@ -210,23 +217,93 @@ class ExifMetadataEditor:
         self.exiftool_cmd = 'exiftool'  # Default fallback
         return False
     
+    def load_exiftool_path(self):
+        """Load saved ExifTool path from config file"""
+        try:
+            if self.config_file.exists():
+                with open(self.config_file, 'r') as f:
+                    config = json.load(f)
+                    return config.get('exiftool_path')
+        except Exception as e:
+            print(f"Error loading config: {e}")
+        return None
+    
+    def save_exiftool_path(self, path):
+        """Save ExifTool path to config file"""
+        try:
+            config = {'exiftool_path': path}
+            with open(self.config_file, 'w') as f:
+                json.dump(config, f)
+        except Exception as e:
+            print(f"Error saving config: {e}")
+    
+    def test_exiftool_path(self, path):
+        """Test if the given ExifTool path works"""
+        try:
+            result = subprocess.run([path, '-ver'], capture_output=True, text=True, timeout=5, shell=False)
+            if result.returncode == 0:
+                version = result.stdout.strip()
+                self.update_status(f"✓ ExifTool v{version} ready (custom path)")
+                self.exiftool_cmd = path
+                return True
+        except Exception as e:
+            print(f"Error testing path {path}: {e}")
+        return False
+    
     def show_exiftool_error(self):
         """Show error when ExifTool is not found"""
-        error_msg = (
+        # Ask user if they want to locate ExifTool manually
+        response = messagebox.askyesno(
+            "ExifTool Not Found",
             "ExifTool is not installed or not found in system PATH.\n\n"
-            "INSTALLATION INSTRUCTIONS:\n\n"
-            "Windows:\n"
-            "1. Download exiftool from: https://exiftool.org/\n"
-            "2. Extract exiftool(-k).exe and rename to exiftool.exe\n"
-            "3. Place in C:\\Windows\\ or add folder to PATH\n\n"
-            "Linux:\n"
-            "  sudo apt-get install libimage-exiftool-perl\n\n"
-            "macOS:\n"
-            "  brew install exiftool\n\n"
-            "After installation, restart this application."
+            "Do you want to locate exiftool.exe manually?\n\n"
+            "Click 'Yes' to browse for exiftool.exe\n"
+            "Click 'No' to see installation instructions"
         )
-        messagebox.showerror("ExifTool Not Found", error_msg)
-        self.update_status("⚠ ERROR: ExifTool not found - See installation instructions")
+        
+        if response:
+            # User wants to browse for ExifTool
+            file_path = filedialog.askopenfilename(
+                title="Locate exiftool.exe",
+                filetypes=[("ExifTool Executable", "exiftool.exe"), ("All Files", "*.*")]
+            )
+            
+            if file_path:
+                # Test if the selected file is ExifTool
+                if self.test_exiftool_path(file_path):
+                    # Save the path for future use
+                    self.save_exiftool_path(file_path)
+                    messagebox.showinfo(
+                        "ExifTool Found",
+                        f"ExifTool has been located and saved!\n\nPath: {file_path}\n\n"
+                        "This path will be used for future sessions."
+                    )
+                else:
+                    messagebox.showerror(
+                        "Invalid ExifTool",
+                        "The selected file is not a valid ExifTool executable.\n\n"
+                        "Please make sure you select exiftool.exe"
+                    )
+                    self.update_status("⚠ ERROR: Invalid ExifTool executable")
+            else:
+                self.update_status("⚠ ERROR: ExifTool not found")
+        else:
+            # Show installation instructions
+            error_msg = (
+                "INSTALLATION INSTRUCTIONS:\n\n"
+                "Windows:\n"
+                "1. Download exiftool from: https://exiftool.org/\n"
+                "2. Extract exiftool(-k).exe and rename to exiftool.exe\n"
+                "3. Place in C:\\Windows\\ or add folder to PATH\n"
+                "   OR use 'Browse' option when prompted\n\n"
+                "Linux:\n"
+                "  sudo apt-get install libimage-exiftool-perl\n\n"
+                "macOS:\n"
+                "  brew install exiftool\n\n"
+                "After installation, restart this application."
+            )
+            messagebox.showinfo("Installation Instructions", error_msg)
+            self.update_status("⚠ ERROR: ExifTool not found - See installation instructions")
     
     def embed_metadata(self):
         """Embed metadata into the selected image"""
