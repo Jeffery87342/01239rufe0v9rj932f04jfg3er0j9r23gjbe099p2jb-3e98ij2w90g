@@ -62,7 +62,7 @@ if %errorlevel% neq 0 (
 :install_deps
 REM Check if dependencies are already installed
 echo [*] Checking installed dependencies...
-python -c "import requests, PIL, numpy, cv2, colorama, cryptography" >nul 2>&1
+python -c "import requests, PIL, numpy, cv2, colorama, cryptography, socks" >nul 2>&1
 if %errorlevel% equ 0 (
     echo [+] All dependencies already installed, skipping installation
     echo.
@@ -89,6 +89,8 @@ echo [*] Installing colorama...
 python -m pip install --only-binary=:all: "colorama>=0.4.6" --quiet
 echo [*] Installing cryptography...
 python -m pip install --only-binary=:all: "cryptography>=41.0.0" --quiet
+echo [*] Installing PySocks (for SOCKS proxy support)...
+python -m pip install --only-binary=:all: "pysocks>=1.7.1" --quiet
 
 if %errorlevel% neq 0 (
     echo [!] ERROR: Failed to install dependencies

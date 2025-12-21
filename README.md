@@ -186,6 +186,8 @@ All dependencies in `requirements.txt`:
 - `numpy` - Numerical operations (auto-selects version with pre-built wheels for your Python)
 - `opencv-python-headless` - Computer vision (headless version for better compatibility)
 - `colorama` - Colored console output
+- `cryptography` - ECDSA authentication and signing
+- `pysocks` - SOCKS proxy support (required for SOCKS5/SOCKS4 proxies)
 
 **Installation:** `pip install -r requirements.txt`
 
