@@ -365,3 +365,7 @@ function crowdRun3d() {
 function dogeMiner2() {
   openAg('https://dogeminer2.com');
 }
+
+function robloxTshirt() {
+  location.href = '/roblox-tshirt';
+}
