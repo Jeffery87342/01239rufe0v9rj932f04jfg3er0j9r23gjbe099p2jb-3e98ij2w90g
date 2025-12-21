@@ -82,8 +82,8 @@ REM Check if required Python files exist
 echo [*] Verifying required files...
 set MISSING_FILES=0
 
-if not exist "gui.py" (
-    echo [!] ERROR: gui.py not found
+if not exist "main.py" (
+    echo [!] ERROR: main.py not found
     set MISSING_FILES=1
 )
 if not exist "roblox_signup.py" (
@@ -96,6 +96,18 @@ if not exist "funcaptcha_solver.py" (
 )
 if not exist "funcaptcha_utils.py" (
     echo [!] ERROR: funcaptcha_utils.py not found
+    set MISSING_FILES=1
+)
+if not exist "generate.py" (
+    echo [!] ERROR: generate.py not found
+    set MISSING_FILES=1
+)
+if not exist "generate_counter.py" (
+    echo [!] ERROR: generate_counter.py not found
+    set MISSING_FILES=1
+)
+if not exist "util.py" (
+    echo [!] ERROR: util.py not found
     set MISSING_FILES=1
 )
 
@@ -122,8 +134,8 @@ echo ================================================================
 echo.
 timeout /t 2 /nobreak >nul
 
-REM Run the main application with GUI
-python gui.py
+REM Run the main application with threading
+python main.py
 
 REM Check if the program exited with an error
 if %errorlevel% neq 0 (

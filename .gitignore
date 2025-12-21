@@ -16,8 +16,8 @@ ENV/
 
 # Account and configuration data
 accounts.txt
-config.json
 *.log
 
-# Don't commit actual proxies (keep template only)
+# Don't commit actual proxies or user config (keep templates only)
 # proxies.txt
+# config.json

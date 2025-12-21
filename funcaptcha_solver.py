@@ -22,7 +22,7 @@ from datetime import datetime
 class FunCaptchaSolver:
     """Ultra-fast API-based FunCaptcha solver - Similar to funbypass.com"""
     
-    def __init__(self, public_key: str, service_url: str, page_url: str, proxy: Optional[str] = None):
+    def __init__(self, public_key: str, service_url: str, page_url: str, proxy: Optional[str] = None, debug: bool = False):
         """
         Initialize the high-performance FunCaptcha solver.
         
@@ -31,11 +31,13 @@ class FunCaptchaSolver:
             service_url: The FunCaptcha service URL
             page_url: The URL of the page containing the captcha
             proxy: Optional proxy server URL
+            debug: Enable debug output
         """
         self.public_key = public_key
         self.service_url = service_url
         self.page_url = page_url
         self.proxy = proxy
+        self.debug = debug
         self.session = requests.Session()
         
         # High-performance session configuration
@@ -67,6 +69,11 @@ class FunCaptchaSolver:
         # Performance tracking
         self.solve_start_time = None
         self.solve_end_time = None
+    
+    def _debug_print(self, message: str):
+        """Print debug message if debug mode is enabled."""
+        if self.debug:
+            print(message)
     
     def _generate_browser_data(self) -> Dict:
         """Generate realistic browser fingerprint data for API requests."""
@@ -438,24 +445,24 @@ class FunCaptchaSolver:
         """
         self.solve_start_time = time.time()
         
-        print('[+] ⚡ Fast API-based solver activated')
+        self._debug_print('[+] ⚡ Fast API-based solver activated')
         
         # Step 1: Get session token (instant)
-        print('[+] 🔑 Requesting session token...')
+        self._debug_print('[+] 🔑 Requesting session token...')
         start = time.time()
         self.get_session_token()
-        print(f'[+] ✓ Token obtained in {(time.time()-start)*1000:.0f}ms')
+        self._debug_print(f'[+] ✓ Token obtained in {(time.time()-start)*1000:.0f}ms')
         
         # For Roblox and many sites, we can skip the challenge entirely
         # by directly using the session token in certain conditions
         if self._try_skip_challenge():
             elapsed = time.time() - self.solve_start_time
-            print(f'[+] ⚡ SOLVED in {elapsed:.2f}s (challenge skipped)')
+            self._debug_print(f'[+] ⚡ SOLVED in {elapsed:.2f}s (challenge skipped)')
             self.solve_end_time = time.time()
             return self.session_token
         
         # Otherwise, solve with minimal attempts
-        print('[+] 🎯 Solving challenge...')
+        self._debug_print('[+] 🎯 Solving challenge...')
         max_waves = 3  # Reduced from 10 for speed
         
         for wave in range(max_waves):
@@ -474,15 +481,15 @@ class FunCaptchaSolver:
             
             if result.get('solved') or result.get('response') == 'answered':
                 elapsed = time.time() - self.solve_start_time
-                print(f'[+] ⚡ SOLVED in {elapsed:.2f}s (wave {wave+1}, {wave_time:.0f}ms)')
+                self._debug_print(f'[+] ⚡ SOLVED in {elapsed:.2f}s (wave {wave+1}, {wave_time:.0f}ms)')
                 self.solve_end_time = time.time()
                 return self.session_token
             
-            print(f'[+] Wave {wave+1} completed in {wave_time:.0f}ms')
+            self._debug_print(f'[+] Wave {wave+1} completed in {wave_time:.0f}ms')
         
         # Even if not "solved", return token (works for many implementations)
         elapsed = time.time() - self.solve_start_time
-        print(f'[+] ⚡ Completed in {elapsed:.2f}s')
+        self._debug_print(f'[+] ⚡ Completed in {elapsed:.2f}s')
         self.solve_end_time = time.time()
         return self.session_token
     
