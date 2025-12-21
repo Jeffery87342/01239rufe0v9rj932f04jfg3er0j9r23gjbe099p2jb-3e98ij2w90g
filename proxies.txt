@@ -9,25 +9,24 @@
 # SUPPORTED FORMATS:
 # ═══════════════════════════════════════════════════════════════════
 #
-# HTTP Proxies:
+# Standard Format (with protocol):
 #   http://ip:port
 #   http://username:password@ip:port
-#
-# HTTPS Proxies:
 #   https://ip:port
 #   https://username:password@ip:port
-#
-# SOCKS5 Proxies:
 #   socks5://ip:port
 #   socks5://username:password@ip:port
-#
-# SOCKS4 Proxies:
 #   socks4://ip:port
+#
+# Alternate Format (auto-converted to socks5):
+#   ip:port                           → socks5://ip:port
+#   ip:port@username:password         → socks5://username:password@ip:port
 #
 # ═══════════════════════════════════════════════════════════════════
 # VALID EXAMPLES:
 # ═══════════════════════════════════════════════════════════════════
 #
+# Standard format:
 # http://127.0.0.1:8080
 # http://192.168.1.100:3128
 # http://username:password@proxy.example.com:8080
@@ -35,15 +34,18 @@
 # socks5://user:pass@proxy.example.com:1080
 # socks5://203.0.113.1:1080
 #
+# Alternate format (auto-converted):
+# 185.61.218.254:1080@mix1016YTJHRR:Qobkm9bt
+# 192.168.1.1:8080
+# 10.0.0.5:3128@user:pass
+#
 # ═══════════════════════════════════════════════════════════════════
 # INVALID EXAMPLES (WILL BE REJECTED):
 # ═══════════════════════════════════════════════════════════════════
 #
-# 127.0.0.1:8080              ❌ Missing protocol (http://)
 # proxy.com                    ❌ Missing port number
 # http://proxy.com             ❌ Missing port number
-# user:pass@host:port          ❌ Missing protocol
-# 192.168.1.1                  ❌ Missing protocol and port
+# 192.168.1.1                  ❌ Missing port number
 #
 # ═══════════════════════════════════════════════════════════════════
 # NOTES:
