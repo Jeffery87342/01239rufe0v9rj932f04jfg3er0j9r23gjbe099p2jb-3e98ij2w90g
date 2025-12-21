@@ -197,6 +197,24 @@ All dependencies in `requirements.txt`:
 - Install Python 3.7+ from [python.org](https://python.org)
 - Check "Add Python to PATH" during installation
 
+### Installation errors (numpy/opencv build failures on Windows)
+If you get errors about missing compilers when running `pip install -r requirements.txt`:
+
+**Quick Fix:**
+```bash
+# Upgrade pip first
+python -m pip install --upgrade pip
+
+# Install packages one at a time (this uses pre-built wheels)
+pip install requests
+pip install pillow
+pip install "numpy<2.0.0"
+pip install opencv-python
+pip install colorama
+```
+
+**Alternative:** The `run.bat` launcher handles this automatically. Just double-click `run.bat` instead of manually installing.
+
 ### "No proxies loaded"
 - Add proxies to `proxies.txt`, OR
 - Set `"use_proxies": false` in `config.json`

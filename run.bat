@@ -65,11 +65,26 @@ echo [*] Installing/Updating dependencies...
 echo [*] This may take a few minutes on first run...
 echo.
 python -m pip install --upgrade pip --quiet
-python -m pip install -r requirements.txt --quiet
+
+REM Install packages individually for better Windows compatibility
+echo [*] Installing requests...
+python -m pip install "requests>=2.31.0" --quiet
+echo [*] Installing pillow...
+python -m pip install "pillow>=10.0.0" --quiet
+echo [*] Installing numpy...
+python -m pip install "numpy>=1.24.0,<2.0.0" --quiet
+echo [*] Installing opencv-python...
+python -m pip install "opencv-python>=4.8.0,<5.0.0" --quiet
+echo [*] Installing colorama...
+python -m pip install "colorama>=0.4.6" --quiet
 
 if %errorlevel% neq 0 (
     echo [!] ERROR: Failed to install dependencies
-    echo [!] Please check your internet connection and try again
+    echo [!] If you see compiler errors, try:
+    echo [!]   1. Close this window
+    echo [!]   2. Open Command Prompt as Administrator
+    echo [!]   3. Run: python -m pip install --upgrade pip
+    echo [!]   4. Run this launcher again
     echo.
     pause
     exit /b 1
