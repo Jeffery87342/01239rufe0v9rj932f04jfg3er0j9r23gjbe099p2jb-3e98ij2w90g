@@ -1,0 +1,59 @@
+# License
+
+## GNU General Public License v3.0 (GPL-3.0)
+
+This project is licensed under the GNU General Public License v3.0 or later.
+
+You can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+## Disclaimer
+
+This software is provided for **educational and research purposes only**.
+
+**IMPORTANT NOTICES:**
+
+1. **Terms of Service Compliance**
+   - Automated account creation may violate Roblox's Terms of Service
+   - Using this software may result in account bans or legal action
+   - Users are solely responsible for compliance with applicable terms and laws
+
+2. **No Warranty**
+   - This software is provided "AS IS" without any warranty
+   - The authors assume no liability for any damages or consequences
+   - Use at your own risk
+
+3. **Ethical Use**
+   - This tool should only be used for educational purposes
+   - Respect website policies and rate limits
+   - Do not use for malicious purposes or to harm others
+
+4. **User Responsibility**
+   - You are responsible for how you use this software
+   - You are responsible for compliance with all applicable laws
+   - You are responsible for securing generated account data
+
+## Third-Party Libraries
+
+This project uses the following third-party libraries:
+
+- **requests** - Apache License 2.0
+- **Pillow** - PIL Software License
+- **NumPy** - BSD License
+- **OpenCV** - Apache License 2.0
+- **colorama** - BSD License
+
+See individual library documentation for their respective licenses.
+
+## Attribution
+
+If you use this software or derivative works, please provide appropriate credit and maintain this license notice.
+
+---
+
+Copyright (c) 2025 Roblox Account Creator Contributors
+
+This project is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation.
