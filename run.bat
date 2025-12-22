@@ -1,50 +1,38 @@
 @echo off
-title EXIF Metadata Editor
+title Roblox Group Auto-Joiner
 color 0A
 
-echo ================================================
-echo     EXIF Metadata Editor - PNG Image Tool
-echo ================================================
+echo ============================================================
+echo Roblox Group Auto-Joiner
+echo ============================================================
 echo.
 
 REM Check if Python is installed
 python --version >nul 2>&1
 if errorlevel 1 (
-    echo [ERROR] Python is not installed or not in PATH
-    echo Please install Python 3.7 or higher from python.org
+    echo [ERROR] Python is not installed or not in PATH!
+    echo.
+    echo Please install Python 3.7+ from https://www.python.org/
+    echo Make sure to check "Add Python to PATH" during installation
     pause
     exit /b 1
 )
 
-echo [+] Python detected
+echo [INFO] Python found!
 echo.
 
-REM Check if ExifTool is installed
-exiftool -ver >nul 2>&1
+REM Check if requests is installed
+python -c "import requests" >nul 2>&1
 if errorlevel 1 (
-    echo [WARNING] ExifTool not detected
-    echo.
-    echo Please install ExifTool from: https://exiftool.org/
-    echo.
-    echo Installation steps:
-    echo 1. Download ExifTool for Windows
-    echo 2. Extract the .zip file
-    echo 3. Rename 'exiftool(-k).exe' to 'exiftool.exe'
-    echo 4. Add to system PATH or place in this folder
-    echo.
-    echo The application will start, but won't work without ExifTool.
-    echo.
-    pause
-) else (
-    echo [+] ExifTool detected
+    echo [INFO] Installing required package: requests
+    pip install requests
     echo.
 )
 
-echo [*] Starting EXIF Metadata Editor...
+echo [INFO] Starting Roblox Group Auto-Joiner...
 echo.
 
-REM Run the application
+REM Run the main script
 python main.py
 
-REM Always pause at the end so user can see any output
 pause

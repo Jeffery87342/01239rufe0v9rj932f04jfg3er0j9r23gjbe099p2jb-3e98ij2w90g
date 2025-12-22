@@ -1,0 +1,17 @@
+# Proxy List (Optional)
+# Add one proxy per line
+#
+# Supported formats:
+# 1. http://ip:port
+# 2. http://user:pass@ip:port
+# 3. socks5://ip:port
+# 4. socks5://user:pass@ip:port
+# 5. ip:port@user:pass  (will be auto-converted to socks5)
+# 6. ip:port  (will be treated as http)
+#
+# Examples:
+# http://127.0.0.1:8080
+# http://user:pass@proxy.example.com:8080
+# socks5://192.168.1.1:1080
+# 185.61.218.254:1080@username:password
+
