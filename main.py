@@ -46,11 +46,11 @@ class RobloxGroupJoiner:
             'https': proxy
         }
     
-    def get_csrf_token(self, cookie: str, max_retries: int = 5) -> Optional[str]:
+    def get_csrf_token(self, cookie: str, max_retries: int = 3) -> Optional[str]:
         """Get CSRF token from Roblox with retry logic"""
         for attempt in range(max_retries):
-            # Use proxy for first 3 attempts, then try without proxy
-            proxy = self.get_proxy() if (attempt < 3 and self.proxies) else None
+            # Use proxy for first 2 attempts, then try without proxy
+            proxy = self.get_proxy() if (attempt < 2 and self.proxies) else None
             
             try:
                 headers = {
@@ -65,7 +65,7 @@ class RobloxGroupJoiner:
                     headers=headers,
                     json={},  # Empty JSON body
                     proxies=proxy,
-                    timeout=20
+                    timeout=8  # Reduced from 20 to 8 seconds
                 )
                 
                 # CSRF token is returned in the response header when we make a POST without it
@@ -74,31 +74,31 @@ class RobloxGroupJoiner:
                 
                 # If we didn't get a token, retry
                 if attempt < max_retries - 1:
-                    time.sleep(0.5)
+                    time.sleep(0.2)  # Reduced from 0.5
                     continue
                     
                 return None
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
                 if attempt < max_retries - 1:
                     # Retry with different proxy
-                    time.sleep(0.3)
+                    time.sleep(0.1)  # Reduced from 0.3
                     continue
                 else:
                     # Last attempt failed
                     return None
             except Exception as e:
                 if attempt < max_retries - 1:
-                    time.sleep(0.3)
+                    time.sleep(0.1)  # Reduced from 0.3
                     continue
                 return None
         
         return None
     
-    def get_user_info(self, cookie: str, max_retries: int = 5) -> Optional[Dict]:
+    def get_user_info(self, cookie: str, max_retries: int = 2) -> Optional[Dict]:
         """Get authenticated user information with retry logic"""
         for attempt in range(max_retries):
-            # Use proxy for first 3 attempts, then try without proxy
-            proxy = self.get_proxy() if (attempt < 3 and self.proxies) else None
+            # Use proxy for first attempt only, then try without proxy
+            proxy = self.get_proxy() if (attempt < 1 and self.proxies) else None
             
             try:
                 headers = {
@@ -110,7 +110,7 @@ class RobloxGroupJoiner:
                     self.user_info_url,
                     headers=headers,
                     proxies=proxy,
-                    timeout=20
+                    timeout=5  # Reduced from 20 to 5 seconds
                 )
                 
                 if response.status_code == 200:
@@ -118,21 +118,21 @@ class RobloxGroupJoiner:
                 
                 # If not successful, retry
                 if attempt < max_retries - 1:
-                    time.sleep(0.3)
+                    time.sleep(0.1)  # Reduced from 0.3
                     continue
                     
                 return None
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
                 if attempt < max_retries - 1:
                     # Retry with different proxy
-                    time.sleep(0.3)
+                    time.sleep(0.1)  # Reduced from 0.3
                     continue
                 else:
                     # Last attempt failed, return None silently
                     return None
             except Exception as e:
                 if attempt < max_retries - 1:
-                    time.sleep(0.3)
+                    time.sleep(0.1)  # Reduced from 0.3
                     continue
                 return None
         
@@ -140,7 +140,7 @@ class RobloxGroupJoiner:
     
     def join_group(self, cookie: str, username: str = "Unknown") -> bool:
         """Join a Roblox group using cookie with retry logic"""
-        max_retries = 5
+        max_retries = 3  # Reduced from 5 to 3
         
         # Get CSRF token with retry
         print(f"{Colors.CYAN}[{username}] Getting CSRF token...{Colors.RESET}")
@@ -152,8 +152,8 @@ class RobloxGroupJoiner:
         
         # Try to join group with retry logic
         for attempt in range(max_retries):
-            # Use proxy for first 3 attempts, then try without proxy
-            proxy = self.get_proxy() if (attempt < 3 and self.proxies) else None
+            # Use proxy for first 2 attempts, then try without proxy
+            proxy = self.get_proxy() if (attempt < 2 and self.proxies) else None
             
             try:
                 # Prepare headers with CSRF token
@@ -169,7 +169,7 @@ class RobloxGroupJoiner:
                 # Join the group with empty body
                 if attempt == 0:
                     print(f"{Colors.YELLOW}[{username}] Joining group {self.group_id}...{Colors.RESET}")
-                elif attempt >= 3:
+                elif attempt >= 2:
                     print(f"{Colors.YELLOW}[{username}] Retrying without proxy (attempt {attempt + 1}/{max_retries})...{Colors.RESET}")
                 else:
                     print(f"{Colors.YELLOW}[{username}] Retrying (attempt {attempt + 1}/{max_retries})...{Colors.RESET}")
@@ -179,7 +179,7 @@ class RobloxGroupJoiner:
                     headers=headers,
                     json={},  # Empty JSON body
                     proxies=proxy,
-                    timeout=20
+                    timeout=10  # Reduced from 20 to 10 seconds
                 )
                 
                 if response.status_code == 200:
@@ -208,7 +208,7 @@ class RobloxGroupJoiner:
                     # Could be CSRF token issue or banned
                     if attempt < max_retries - 1:
                         # Try to get new CSRF token
-                        time.sleep(1)
+                        time.sleep(0.5)  # Reduced from 1 second
                         csrf_token = self.get_csrf_token(cookie, 2)
                         if csrf_token:
                             continue
@@ -217,7 +217,7 @@ class RobloxGroupJoiner:
                 else:
                     # Retry on other status codes
                     if attempt < max_retries - 1:
-                        time.sleep(1)
+                        time.sleep(0.3)  # Reduced from 1 second
                         continue
                     print(f"{Colors.RED}[{username}] Failed with status code: {response.status_code}{Colors.RESET}")
                     return False
@@ -225,7 +225,7 @@ class RobloxGroupJoiner:
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
                 if attempt < max_retries - 1:
                     # Retry with different settings
-                    time.sleep(0.5)
+                    time.sleep(0.2)  # Reduced from 0.5
                     continue
                 else:
                     # Last attempt failed
@@ -233,7 +233,7 @@ class RobloxGroupJoiner:
                     return False
             except Exception as e:
                 if attempt < max_retries - 1:
-                    time.sleep(0.5)
+                    time.sleep(0.2)  # Reduced from 0.5
                     continue
                 print(f"{Colors.RED}[{username}] Error: {str(e)[:80]}{Colors.RESET}")
                 return False
