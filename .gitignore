@@ -14,10 +14,10 @@ venv/
 env/
 ENV/
 
-# Account and configuration data
+# Account and configuration data (user's actual data)
 accounts.txt
 *.log
 
-# Don't commit actual proxies or user config (keep templates only)
-# proxies.txt
-# config.json
+# Keep template files for user reference
+!accounts.txt.template
+!proxies.txt
