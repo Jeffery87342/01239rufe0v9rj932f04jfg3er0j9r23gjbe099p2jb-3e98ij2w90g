@@ -46,108 +46,158 @@ class RobloxGroupJoiner:
             'https': proxy
         }
     
-    def get_csrf_token(self, cookie: str, proxy: Optional[Dict[str, str]] = None) -> Optional[str]:
-        """Get CSRF token from Roblox"""
-        try:
-            headers = {
-                'Cookie': f'.ROBLOSECURITY={cookie}',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
+    def get_csrf_token(self, cookie: str, max_retries: int = 3) -> Optional[str]:
+        """Get CSRF token from Roblox with retry logic"""
+        for attempt in range(max_retries):
+            proxy = self.get_proxy() if attempt < max_retries - 1 else None
             
-            response = requests.post(
-                self.group_join_url,
-                headers=headers,
-                proxies=proxy,
-                timeout=10
-            )
-            
-            # CSRF token is returned in the response header when we make a POST without it
-            if 'x-csrf-token' in response.headers:
-                return response.headers['x-csrf-token']
-            
-            return None
-        except Exception as e:
-            print(f"{Colors.RED}[ERROR] Failed to get CSRF token: {e}{Colors.RESET}")
-            return None
+            try:
+                headers = {
+                    'Cookie': f'.ROBLOSECURITY={cookie}',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+                
+                response = requests.post(
+                    self.group_join_url,
+                    headers=headers,
+                    proxies=proxy,
+                    timeout=15
+                )
+                
+                # CSRF token is returned in the response header when we make a POST without it
+                if 'x-csrf-token' in response.headers:
+                    return response.headers['x-csrf-token']
+                
+                return None
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+                if attempt < max_retries - 1:
+                    # Retry with different proxy
+                    continue
+                else:
+                    # Last attempt failed
+                    return None
+            except Exception as e:
+                return None
+        
+        return None
     
-    def get_user_info(self, cookie: str, proxy: Optional[Dict[str, str]] = None) -> Optional[Dict]:
-        """Get authenticated user information"""
-        try:
-            headers = {
-                'Cookie': f'.ROBLOSECURITY={cookie}',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
+    def get_user_info(self, cookie: str, max_retries: int = 3) -> Optional[Dict]:
+        """Get authenticated user information with retry logic"""
+        for attempt in range(max_retries):
+            proxy = self.get_proxy() if attempt < max_retries - 1 else None
             
-            response = requests.get(
-                self.user_info_url,
-                headers=headers,
-                proxies=proxy,
-                timeout=10
-            )
-            
-            if response.status_code == 200:
-                return response.json()
-            
-            return None
-        except Exception as e:
-            print(f"{Colors.RED}[ERROR] Failed to get user info: {e}{Colors.RESET}")
-            return None
+            try:
+                headers = {
+                    'Cookie': f'.ROBLOSECURITY={cookie}',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+                
+                response = requests.get(
+                    self.user_info_url,
+                    headers=headers,
+                    proxies=proxy,
+                    timeout=15
+                )
+                
+                if response.status_code == 200:
+                    return response.json()
+                
+                return None
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+                if attempt < max_retries - 1:
+                    # Retry with different proxy
+                    continue
+                else:
+                    # Last attempt failed, return None silently
+                    return None
+            except Exception as e:
+                return None
+        
+        return None
     
     def join_group(self, cookie: str, username: str = "Unknown") -> bool:
-        """Join a Roblox group using cookie"""
-        proxy = self.get_proxy()
+        """Join a Roblox group using cookie with retry logic"""
+        max_retries = 3
         
-        try:
-            # Get CSRF token
-            print(f"{Colors.CYAN}[{username}] Getting CSRF token...{Colors.RESET}")
-            csrf_token = self.get_csrf_token(cookie, proxy)
-            
-            if not csrf_token:
-                print(f"{Colors.RED}[{username}] Failed to get CSRF token{Colors.RESET}")
-                return False
-            
-            # Prepare headers with CSRF token
-            headers = {
-                'Cookie': f'.ROBLOSECURITY={cookie}',
-                'X-CSRF-TOKEN': csrf_token,
-                'Content-Type': 'application/json',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-            
-            # Join the group
-            print(f"{Colors.YELLOW}[{username}] Joining group {self.group_id}...{Colors.RESET}")
-            response = requests.post(
-                self.group_join_url,
-                headers=headers,
-                proxies=proxy,
-                timeout=10
-            )
-            
-            if response.status_code == 200:
-                print(f"{Colors.GREEN}[{username}] ✓ Successfully joined group {self.group_id}!{Colors.RESET}")
-                return True
-            elif response.status_code == 400:
-                # User might already be in the group
-                error_data = response.json()
-                if 'errors' in error_data:
-                    error_msg = error_data['errors'][0].get('message', 'Unknown error')
-                    if 'already' in error_msg.lower():
-                        print(f"{Colors.YELLOW}[{username}] Already in group{Colors.RESET}")
-                        return True
-                    print(f"{Colors.RED}[{username}] Error: {error_msg}{Colors.RESET}")
-                return False
-            else:
-                print(f"{Colors.RED}[{username}] Failed with status code: {response.status_code}{Colors.RESET}")
-                return False
-                
-        except Exception as e:
-            print(f"{Colors.RED}[{username}] Exception: {e}{Colors.RESET}")
+        # Get CSRF token with retry
+        print(f"{Colors.CYAN}[{username}] Getting CSRF token...{Colors.RESET}")
+        csrf_token = self.get_csrf_token(cookie, max_retries)
+        
+        if not csrf_token:
+            print(f"{Colors.RED}[{username}] Failed to get CSRF token after {max_retries} attempts{Colors.RESET}")
             return False
+        
+        # Try to join group with retry logic
+        for attempt in range(max_retries):
+            proxy = self.get_proxy() if attempt < max_retries - 1 else None
+            
+            try:
+                # Prepare headers with CSRF token
+                headers = {
+                    'Cookie': f'.ROBLOSECURITY={cookie}',
+                    'X-CSRF-TOKEN': csrf_token,
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+                
+                # Join the group
+                if attempt == 0:
+                    print(f"{Colors.YELLOW}[{username}] Joining group {self.group_id}...{Colors.RESET}")
+                elif attempt < max_retries - 1:
+                    print(f"{Colors.YELLOW}[{username}] Retrying with different proxy (attempt {attempt + 1}/{max_retries})...{Colors.RESET}")
+                else:
+                    print(f"{Colors.YELLOW}[{username}] Final attempt without proxy...{Colors.RESET}")
+                
+                response = requests.post(
+                    self.group_join_url,
+                    headers=headers,
+                    proxies=proxy,
+                    timeout=15
+                )
+                
+                if response.status_code == 200:
+                    print(f"{Colors.GREEN}[{username}] ✓ Successfully joined group {self.group_id}!{Colors.RESET}")
+                    return True
+                elif response.status_code == 400:
+                    # User might already be in the group
+                    try:
+                        error_data = response.json()
+                        if 'errors' in error_data:
+                            error_msg = error_data['errors'][0].get('message', 'Unknown error')
+                            if 'already' in error_msg.lower():
+                                print(f"{Colors.YELLOW}[{username}] Already in group{Colors.RESET}")
+                                return True
+                            print(f"{Colors.RED}[{username}] Error: {error_msg}{Colors.RESET}")
+                    except:
+                        pass
+                    return False
+                else:
+                    # Retry on other status codes
+                    if attempt < max_retries - 1:
+                        continue
+                    print(f"{Colors.RED}[{username}] Failed with status code: {response.status_code}{Colors.RESET}")
+                    return False
+                    
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+                if attempt < max_retries - 1:
+                    # Retry with different proxy
+                    continue
+                else:
+                    # Last attempt failed
+                    print(f"{Colors.RED}[{username}] Connection failed after {max_retries} attempts{Colors.RESET}")
+                    return False
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    continue
+                print(f"{Colors.RED}[{username}] Exception: {str(e)[:100]}{Colors.RESET}")
+                return False
+        
+        return False
     
     def process_account(self, cookie: str, index: int) -> bool:
         """Process a single account"""
-        # Get user info first
-        user_info = self.get_user_info(cookie, self.get_proxy())
+        # Get user info first (with retry logic built in)
+        user_info = self.get_user_info(cookie)
         
         if user_info:
             username = user_info.get('name', f'Account_{index}')
@@ -157,7 +207,7 @@ class RobloxGroupJoiner:
             username = f'Account_{index}'
             print(f"{Colors.YELLOW}[WARN] Could not get user info, using {username}{Colors.RESET}")
         
-        # Join the group
+        # Join the group (with retry logic built in)
         success = self.join_group(cookie, username)
         
         if success:
