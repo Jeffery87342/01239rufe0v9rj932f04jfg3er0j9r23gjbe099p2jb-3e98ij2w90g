@@ -307,18 +307,8 @@ def load_cookies(filename: str = 'accounts.txt') -> List[str]:
             cookies = [line.strip() for line in f if line.strip() and not line.startswith('#')]
         return cookies
     except FileNotFoundError:
-        # Try to create from template
-        import shutil
-        import os
-        template_file = 'accounts.txt.template'
-        if os.path.exists(template_file):
-            try:
-                shutil.copy(template_file, filename)
-                print(f"{Colors.YELLOW}[INFO] Created {filename} from template{Colors.RESET}")
-                print(f"{Colors.YELLOW}[INFO] Please add your .ROBLOSECURITY cookies to {filename} (one per line){Colors.RESET}")
-            except Exception as e:
-                pass
         print(f"{Colors.RED}[ERROR] {filename} not found!{Colors.RESET}")
+        print(f"{Colors.YELLOW}[INFO] Please add your .ROBLOSECURITY cookies to {filename} (one per line){Colors.RESET}")
         return []
 
 def load_proxies(filename: str = 'proxies.txt') -> List[str]:

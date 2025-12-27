@@ -14,10 +14,9 @@ venv/
 env/
 ENV/
 
-# Account and configuration data (user's actual data)
-accounts.txt
+# Logs
 *.log
 
 # Keep template files for user reference
-!accounts.txt.template
+!accounts.txt
 !proxies.txt
