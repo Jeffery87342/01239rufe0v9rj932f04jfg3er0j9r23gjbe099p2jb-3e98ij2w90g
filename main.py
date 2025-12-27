@@ -204,11 +204,11 @@ class RobloxGroupJoiner:
         print(f"{Colors.CYAN}Time Elapsed: {elapsed:.2f} seconds{Colors.RESET}")
         print(f"{Colors.BOLD}{'='*70}{Colors.RESET}")
 
-def load_cookies(filename: str = 'cookies.txt') -> List[str]:
+def load_cookies(filename: str = 'accounts.txt') -> List[str]:
     """Load cookies from file"""
     try:
         with open(filename, 'r') as f:
-            cookies = [line.strip() for line in f if line.strip()]
+            cookies = [line.strip() for line in f if line.strip() and not line.startswith('#')]
         return cookies
     except FileNotFoundError:
         print(f"{Colors.RED}[ERROR] {filename} not found!{Colors.RESET}")
@@ -221,7 +221,7 @@ def load_proxies(filename: str = 'proxies.txt') -> List[str]:
             proxies = []
             for line in f:
                 line = line.strip()
-                if not line:
+                if not line or line.startswith('#'):
                     continue
                 
                 # Handle different proxy formats
@@ -265,20 +265,20 @@ def main():
     except ValueError:
         threads = 5
     
-    # Load cookies
-    print(f"\n{Colors.YELLOW}[INFO] Loading cookies...{Colors.RESET}")
-    cookies = load_cookies()
+    # Load cookies from accounts.txt
+    print(f"\n{Colors.YELLOW}[INFO] Loading account cookies from 'accounts.txt'...{Colors.RESET}")
+    cookies = load_cookies('accounts.txt')
     
     if not cookies:
         print(f"{Colors.RED}[ERROR] No cookies loaded!{Colors.RESET}")
-        print(f"{Colors.YELLOW}[INFO] Create a 'cookies.txt' file with one cookie per line{Colors.RESET}")
+        print(f"{Colors.YELLOW}[INFO] Create an 'accounts.txt' file with one .ROBLOSECURITY cookie per line{Colors.RESET}")
         return
     
     print(f"{Colors.GREEN}[SUCCESS] Loaded {len(cookies)} cookies{Colors.RESET}")
     
-    # Load proxies
-    print(f"{Colors.YELLOW}[INFO] Loading proxies...{Colors.RESET}")
-    proxies = load_proxies()
+    # Load proxies from proxies.txt
+    print(f"{Colors.YELLOW}[INFO] Loading proxies from 'proxies.txt'...{Colors.RESET}")
+    proxies = load_proxies('proxies.txt')
     
     if proxies:
         print(f"{Colors.GREEN}[SUCCESS] Loaded {len(proxies)} proxies{Colors.RESET}")

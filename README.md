@@ -61,7 +61,7 @@ python3 main.py
 
 ### Configuration 📝
 
-1. **Add your Roblox cookies to `cookies.txt`:**
+1. **Add your Roblox cookies to `accounts.txt`:**
    - One cookie per line
    - Get your cookie from browser (see below)
    
@@ -81,7 +81,7 @@ python3 main.py
 4. Navigate to **Cookies** > `https://www.roblox.com`
 5. Find `.ROBLOSECURITY` 
 6. Copy the entire cookie value
-7. Paste it into `cookies.txt`
+7. Paste it into `accounts.txt`
 
 **⚠️ WARNING:** Never share your cookie! It gives full access to your account.
 
@@ -151,7 +151,7 @@ Time Elapsed: 15.34 seconds
 
 ### How It Works
 
-1. Loads account cookies from `cookies.txt`
+1. Loads account cookies from `accounts.txt`
 2. Optionally loads proxies from `proxies.txt`
 3. For each account:
    - Retrieves user information
@@ -171,7 +171,7 @@ Time Elapsed: 15.34 seconds
 ## Troubleshooting 🔍
 
 ### "No cookies loaded"
-- Make sure `cookies.txt` exists and contains valid cookies
+- Make sure `accounts.txt` exists and contains valid cookies
 - Check that cookies aren't expired
 - Ensure one cookie per line
 
